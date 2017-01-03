@@ -5,16 +5,14 @@ Author: Michael Laskey
 
 
 """
-
-
-
 import sys, os, time, cv2, argparse
 import tty, termios
-from alan.rgbd.bincam_2D import BinaryCamera
+
 import numpy as np
 import IPython
 from alan.control import YuMiRobot, YuMiState
-from alan.rgbd.registration_wc import RegWC
+from deep_lfd.rgbd.bincam_2D import BinaryCamera
+from deep_lfd.rgbd.registration_wc import RegWC
 
 
 def list2str(deltas):
@@ -262,7 +260,7 @@ class Common:
         self.run()
       File "/home/autolab/Workspace/micha:
         """
-
+        IPython.embed()
         if rollouts:
             name = self.next_rollout(rollouts)
             path = self.Options.rollouts_dir + name + '/'

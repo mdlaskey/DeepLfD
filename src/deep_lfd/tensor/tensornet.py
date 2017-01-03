@@ -27,7 +27,7 @@ import IPython
 #import Analysis from analysis
 import numpy as np
 import math
-from alan.p_grasp_align.options import Grasp_AlignOptions as options
+
 
 import os
 

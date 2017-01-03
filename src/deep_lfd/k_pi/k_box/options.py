@@ -1,7 +1,7 @@
-from alan.core.options import Options #the imports may need to change on actual computer
+from deep_lfd.core.options import Options #the imports may need to change on actual computer
 import os
 
-class Rope_GrabLOptions(Options):
+class Box_Options(Options):
     OFFSET_X = 160
     OFFSET_Y = 125
 
@@ -24,7 +24,7 @@ class Rope_GrabLOptions(Options):
     ROT_SCALE = 100
     T= 40
 
-    setup_dir = "rope_grab_L/"
+    setup_dir = "box/"
     root_dir = os.path.dirname(os.path.realpath(__file__)) + "/"
 
     def __init__(self):

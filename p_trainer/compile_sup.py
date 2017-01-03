@@ -2,7 +2,7 @@ import sys
 import numpy as np
 import random
 import IPython
-from alan.rgbd.registration_wc import RegWC
+from deep_lfd.rgbd.registration_wc import RegWC
 
 #from alan.lfd_amazon.options import AmazonOptions as Options
 #we can pass this into the Compile_Sup object.

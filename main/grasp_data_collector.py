@@ -1,17 +1,16 @@
-from xbox_controller import *
+
 from alan.control.yumi_subscriber import YuMiSubscriber
 import time, os, pygame
 import IPython
 import cv2
+from deep_lfd.control.xbox_controller import *
+from deep_lfd.core.net_trainer import Net_Trainer
+from deep_lfd.rgbd.bincam_2D import BinaryCamera 
 
-from alan.core.KinestheticTrainer import Kinesthetic_Trainer
-from alan.core.net_trainer import Net_Trainer
-from alan.rgbd.bincam_2D import BinaryCamera 
-
-
-from alan.p_grasp.options import Grasp_Options as p_options
-from alan.p_grasp.com import Grasp_COM as com
-
+###############CHANGGE BELOW TO TRAIN A DIFFERENT PRIMITIVE##############
+from deep_lfd.p_pi.p_grasp.options import Grasp_Options as p_options
+from deep_lfd.p_pi.p_grasp.com import Grasp_COM as com
+##########################################################################
 
 class Demonstration:
 

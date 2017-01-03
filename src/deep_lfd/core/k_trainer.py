@@ -1,6 +1,6 @@
 from alan.control import YuMiConstants as YMC
 from alan.control.yumi_subscriber import YuMiSubscriber
-from alan.control.xbox_controller import XboxController
+from deep_lfd.control.xbox_controller import XboxController
 import os
 import IPython
 import numpy as np
@@ -8,7 +8,8 @@ import numpy as np
 import logging
 from time import sleep
 
-from alan.k_box.options import Box_Options as Options
+#############CHANGE HERE TO TRAIN A NEW PRIMITIVE##############
+from deep_lfd.k_pi.k_box.options import Box_Options as Options
 
 
 class Kinesthetic_Trainer:
@@ -106,7 +107,7 @@ if __name__ == '__main__':
     sub.start()
     opt = Options()
     controller = XboxController()
-    name = "pi_3"
+    name = "pi_6"
     KT = Kinesthetic_Trainer(sub,opt,name,controller)
     KT.start_motion(True)
 

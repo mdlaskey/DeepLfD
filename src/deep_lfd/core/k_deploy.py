@@ -1,7 +1,5 @@
 import numpy as np
 from alan.control import YuMiRobot, YuMiState
-from alan.k_hanoi.options import Hanoi_Options as Options
-from alan.k_rope_tie.options import Rope_TieOptions as Options
 import time
 import IPython
 

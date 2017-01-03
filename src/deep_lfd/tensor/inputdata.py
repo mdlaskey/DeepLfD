@@ -6,7 +6,7 @@ import tensorflow as tf
 import cv2
 import IPython
 import sys
-sys.path.append("../")
+
 
 
 class InputData():
@@ -103,6 +103,8 @@ class IMData(InputData):
         batch = []
         for path, labels in batch_tups:
             im = cv2.imread(path)
+            if(im == None):
+                raise Exception('Image ' + path +' Not Found')
             im = im2tensor(im,self.channels)
             batch.append((im, labels))
         batch = zip(*batch)
@@ -118,6 +120,8 @@ class IMData(InputData):
         batch = []
         for path, labels in self.test_tups[:200]:
             im = cv2.imread(path,self.channels)
+            if(im == None):
+                raise Exception('Image ' + path +' Not Found')
             im = im2tensor(im,self.channels)
             batch.append((im, labels))
         random.shuffle(self.test_tups)

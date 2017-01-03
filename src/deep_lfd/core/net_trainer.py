@@ -9,8 +9,8 @@
 
 import sys
 import tty, termios
-from alan.rgbd.bincam_2D import BinaryCamera 
-from alan.debug.ar_overlay import AR_Debug
+from deep_lfd.rgbd.bincam_2D import BinaryCamera 
+from deep_lfd.debug.ar_overlay import AR_Debug
 import time, datetime, os, random, argparse
 import cv2
 import IPython

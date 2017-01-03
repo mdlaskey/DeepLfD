@@ -23,28 +23,27 @@
 
 
 import sys, os
-sys.path.append('/home/autolab/Workspace/michael_working/Tensor_Net')
 
 import IPython
-from tensor import inputdata
-from alan.p_trainer.compile_sup import Compile_Sup #specific: imports compile_reg from sup
-#from alan.rgbd.binaryThreshBox import transform_image
+from deep_lfd.tensor import inputdata
+from compile_sup import Compile_Sup 
 import numpy as np, argparse
-from alan.synthetic.affine_synthetic import Affine_Synthetic
+from deep_lfd.synthetic.affine_synthetic import Affine_Synthetic
 
 
-#######NETWORK FILES####################
+#######NETWORK FILES TO BE CHANGED#####################
 #specific: imports options from specific options file
-from alan.p_tesla.options import Tesla_Options as options 
-#specific: fetches specific net file
-from tensor.net_tesla import Net_Tesla as Net 
+from deep_lfd.p_pi.p_tesla.options import Tesla_Options as options 
 
+#specific: fetches specific net file
+from deep_lfd.tensor.nets.net_tesla import Net_Tesla as Net 
+########################################################
 
 #########SYNTHETIC PARAMS##########
 
 #Type of Translations
 
-translation = True
+translation = False
 rotation = False
 
 #Max Number of Translations per Images
