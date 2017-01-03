@@ -14,7 +14,7 @@ import scipy.spatial.distance as ssd
 import scipy.optimize as opt
 import pickle
 #from alan.core import RigidTransform, PointCloud, NormalCloud
-from alan.rgbd import bincam_2D as b2
+from deep_lfd.rgbd import bincam_2D as b2
 from numpy import linalg as LA
 
 class RegWC():

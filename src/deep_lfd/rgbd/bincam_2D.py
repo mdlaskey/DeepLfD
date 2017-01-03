@@ -9,11 +9,11 @@ import numpy as np
 import datetime
 import os
 import IPython
-# from alan.lfd_slware.options import SLVOptions
-from alan.lfd_amazon.options import AmazonOptions
+
 from bgSegmentation import segmentBG, bgBoundsByMode
 from basic_imaging import add_dim, deNoise
 import scipy.ndimage.morphology as snm
+
 class BinaryCamera():
 
     def __init__(self, options=None):

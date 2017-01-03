@@ -1,3 +1,27 @@
+''''
+    Used to train a nerual network that maps an image to robot pose (x,y,z)
+    Supports the Option of Synthetically Growing the data for Rotation and Translation 
+
+    Author: Michael Laskey 
+
+
+    Flags
+    ----------
+    --first (-f) : int
+        The first roll out to be trained on (required)
+
+    --last (-l) : int
+        The last rollout to be trained on (reguired)
+
+    --net_name (-n) : string
+        The name of the network if their exists multiple nets for the task (not required)
+
+    --demonstrator (-d) : string 
+        The name of the person who trained the network (not required)
+
+'''
+
+
 import sys, os
 sys.path.append('/home/autolab/Workspace/michael_working/Tensor_Net')
 
@@ -6,52 +30,73 @@ from tensor import inputdata
 from alan.p_trainer.compile_sup import Compile_Sup #specific: imports compile_reg from sup
 #from alan.rgbd.binaryThreshBox import transform_image
 import numpy as np, argparse
+from alan.synthetic.affine_synthetic import Affine_Synthetic
 
-from alan.p_rope_grab_R.options import Rope_GrabROptions as options #specific: imports options from specific options file
-from tensor import net_rope_grab #specific: fetches specific net file
+
+#######NETWORK FILES####################
+#specific: imports options from specific options file
+from alan.p_tesla.options import Tesla_Options as options 
+#specific: fetches specific net file
+from tensor.net_tesla import Net_Tesla as Net 
+
+
+#########SYNTHETIC PARAMS##########
+
+#Type of Translations
+
+translation = True
+rotation = False
+
+#Max Number of Translations per Images
+max_trans = 50
+
+#Max Number of Rotations per Images 
+max_rot = 20
+
+########TRAINING PAPRAMETERS##########
+batch_size = 150
+iterations = 300000
+
+########################################################
+
 
 Options = options()
 
+
 def copy_over(infile, outfile):
+    ''''
+        Appends one file into another
+
+        Parameters
+        ----------
+        infile : file
+            file path for input data
+
+        outfile: file
+            file path for output data
+
+     '''
+
     lines = infile.readlines()
     for line in lines:
     	outfile.write(line)
 
-def conv_deltas_to_str(deltas,cur_pose):
-    label = " "
-    for i in range(2):
-        deltas[i] = deltas[i] #specific: deltas from specific options
-    #deltas = bound_pose(cur_pose,deltas)
-    for i in range(len(deltas)):
-        label = label+str(deltas[i])+" "
 
-    label = label+"\n"
-    return label
-
-def bound_pose(pose,delta_state):
-    pose[0] += delta_state[0]
-    pose[1] += delta_state[1]
-
-    if(pose[0] < Options.X_LOWER_BOUND): #specific: x y information from specific options
-        pose[0] = Options.X_LOWER_BOUND
-    elif(pose[0] > Options.X_UPPER_BOUND):
-        pose[0] = Options.X_UPPER_BOUND
-
-    if(pose[1] < Options.Y_LOWER_BOUND):
-        pose[1] = Options.Y_LOWER_BOUND
-    elif(pose[1] > Options.Y_UPPER_BOUND):
-        pose[1] = Options.Y_UPPER_BOUND
-
-
-    # print pose
-    return pose
 
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--first", type=int,
                         help="enter the starting value of rollouts to be used for training")
     parser.add_argument("-l", "--last", type=int,
                         help="enter the last value of the rollouts to be used for training")
+
+    parser.add_argument("-n", "--net_name", type=str,
+                        help="enter the name of the net to be trained")
+
+    parser.add_argument("-d", "--demonstrator", type=str,
+                        help="enter the name of the subject trained")
+
 
     args = parser.parse_args()
 
@@ -67,6 +112,16 @@ if __name__ == '__main__':
         print "please enter a last value with -l (not inclusive)"
         sys.exit()
 
+
+    if args.net_name is not None:
+        net_name = args.net_name+'/'
+        demonstrator = '/'+args.demonstrator+'/'
+        root_dir = '/home/autolab/Workspace/michael_working/alan/AHRI'+demonstrator
+        Options.setup(root_dir, net_name,folder='net')
+
+    if(translation or rotation):
+        aff_syn = Affine_Synthetic(Options,translation,rotation,max_trans,max_rot)
+        aff_syn.generate_data(first,last)
 
 
     outfile = open(Options.deltas_file, 'w+') #specific: fetches specific directory. CHANGE
@@ -93,6 +148,5 @@ if __name__ == '__main__':
     CS.compile_reg()
 
     data = inputdata.IMData(Options.train_file, Options.test_file) 
-    net = net_rope_grab.Net_Rope_Grab(Options) 
-    #path = Options.policies_dir+'grasp_net_10-23-2016_21h26m19s.ckpt' 
-    net.optimize(3000,data, batch_size=150)
+    net = Net(Options)
+    net.optimize(iterations,data, batch_size=batch_size)

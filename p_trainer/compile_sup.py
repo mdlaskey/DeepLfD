@@ -47,6 +47,11 @@ class Compile_Sup:
 
         deltas[2] = (deltas[2] - self.Options.ROT_MIN)/((self.Options.ROT_MAX - self.Options.ROT_MIN)/2) - 1
 
+        if(len(deltas) == 4):
+            deltas[2] = (deltas[2] - self.Options.Z_MIN)/((self.Options.Z_MAX - self.Options.Z_MIN)/2) - 1
+
+
+
         return deltas
 
     def get_rollout(self,f_name):
@@ -54,11 +59,14 @@ class Compile_Sup:
         rollout_num = int(f_name[7:i])
         return rollout_num
 
-    def compile_reg(self): #might need selfs here
+    def compile_reg(self,img_path = None): #might need selfs here
         train_path = self.Options.train_file
         test_path = self.Options.test_file
         deltas_path = self.Options.deltas_file
         scale_constants = self.get_range()
+
+        if(img_path == None):
+            img_path = self.Options.binaries_dir
 
         print "Moving deltas from " + deltas_path + " to train: " + train_path + " and test: " + test_path
         train_file = open(train_path, 'w+')
@@ -72,6 +80,7 @@ class Compile_Sup:
 
             l = line.split()
             cur_rollout = self.get_rollout(l[0])
+
             #if(cur_rollout != p_rollout):
             p_rollout = cur_rollout
             if random.random() > .2:
@@ -79,8 +88,11 @@ class Compile_Sup:
             else:
                 train = False
 
-            path = self.Options.binaries_dir
+            path = img_path
             labels = line.split()
+
+            print labels
+        
 
 
             deltas = self.scale(labels[1:4],scale_constants)
