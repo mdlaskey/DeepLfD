@@ -40,10 +40,10 @@ def get_rotations_single(data, step = 20):
 
     results = []
 
-    for degree_shift in range(-100, 100, step):
+    for degree_shift in range(0, 360, step):
         #see for reference: http://docs.opencv.org/trunk/da/d6e/tutorial_py_geometric_transformations.html
         M = cv2.getRotationMatrix2D((center.x, center.y), degree_shift, 1)
-      
+
         new_img = cv2.warpAffine(img, M, (cols, rows), flags= cv2.INTER_NEAREST)
         #new_img = cv.GetQuadrangleSubPix(img,M,(cols, rows))
         # cv2.imshow('debug',new_img)
@@ -69,7 +69,7 @@ Returns:
     list with format [[matrix1, label1], ...] including original and expanded data
         expanded data has rotated image, updated label
 """
-def rotate_images(imgs,idx,bounds,deltas_i,cp):
+def rotate_images(imgs,idx,bounds,deltas_i,cp,max_imgs = 20):
     #read first channel of image
     deltas = []
     rotated_imgs = []
@@ -92,6 +92,8 @@ def rotate_images(imgs,idx,bounds,deltas_i,cp):
 
         rotated_images = get_rotations_single([img,label])
 
+        rotated_images = rotated_images[0:max_imgs]
+
         for r_im in rotated_images:
             #read from shifts, which has format [img, [y, x]]
             img = r_im[0]
@@ -104,4 +106,3 @@ def rotate_images(imgs,idx,bounds,deltas_i,cp):
                     index += 1
 
     return deltas,index, rotated_imgs
-

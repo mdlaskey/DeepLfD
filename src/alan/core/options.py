@@ -1,3 +1,13 @@
+"""
+Options Class for Neural Network Go to State Policies 
+Specifies Parameters for Learning and File Structure
+
+Author: Michael Laskey
+
+
+"""
+
+
 import os
 
 class Options():
@@ -6,7 +16,26 @@ class Options():
     drift = 20.0
 
 
-    def setup(self,root_dir,setup_dir):
+    def setup(self,root_dir,setup_dir,folder = None):
+        """
+        Sets the file path to store the image data and labels 
+
+        Parameters
+        ----------
+        root_dir: string
+            Specifies the root directory to save everything in 
+
+        setup_dir: string
+            Specifies the specific neural network that data is being collected for  
+        
+        folder: string
+            Specifies in a higher folder should be made to save multiple network files
+            (Defualt=None and corresponds to one net per primitive)
+
+        """
+
+        if(not folder == None):
+            root_dir = root_dir+folder+'/'
 
         
         self.data_dir = root_dir + 'data/'
@@ -32,14 +61,6 @@ class Options():
         self.originals_dir = self.setup_dir + "originals/"
 
         self.policies_dir = self.setup_dir + "policies/"
-
-    
-
-        self.X_MID_RANGE = (self.X_UPPER_BOUND - self.X_LOWER_BOUND)/2.0
-        self.Y_MID_RANGE = (self.Y_UPPER_BOUND - self.Y_LOWER_BOUND)/2.0
-
-        self.X_CENTER = self.X_LOWER_BOUND+self.X_MID_RANGE
-        self.Y_CENTER = self.Y_LOWER_BOUND+self.Y_MID_RANGE
 
         self.test = False
         self.deploy = False

@@ -53,10 +53,10 @@ def get_rope_car(h = 420, w = 420, rope_l_pixels = 800 , rope_w_pixels = 8, pix_
 
         #get endpoint labels, sorted by x
         labels = [all_positions[0], all_positions[-1]]
-        
+
         if labels[0][0] > labels[1][0]:
             labels = [labels[1], labels[0]]
-            
+
         #labels = [[l[0], l[1], l[2] + 90] for l in labels]
         #Ignoring Rotation for Now
         labels = [[l[0], l[1], 0] for l in labels]
