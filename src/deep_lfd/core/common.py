@@ -246,21 +246,20 @@ class Common:
 
     #Common
     def save_recording(self,recording,bc, rollouts=False):
-        """  File "/home/autolab/Libraries/miniconda2/envs/alan_michael/lib/python2.7/multiprocessing/process.py", line 258, in _bootstrap
-        self.run()
-      File "/home/autolab/Workspace/micha
-            Save instance recordings and states by writing filename and corresponding state
-            to states files and writing images to ma  File "/home/autolab/Libraries/miniconda2/envs/alan_michael/lib/python2.7/multiprocessing/process.py", line 258, in _bootstrap
-        self.run()
-      File "/home/autolab/Workspace/micha  File "/home/autolab/Libraries/miniconda2/envs/alan_michael/lib/python2.7/multiprocessing/process.py", line 258, in _bootstrap
-        self.run()
-      File "/home/autolab/Workspace/michaster frames dir and appropriate rollout dir.
-            Clear recordings and states from memory when done writing
-            :return  File "/home/autolab/Libraries/miniconda2/envs/alan_michael/lib/python2.7/multiprocessing/process.py", line 258, in _bootstrap
-        self.run()
-      File "/home/autolab/Workspace/micha:
+        """  
+        Saves the recoring to the specified file
+
+        Paramters
+        ---------
+        recording: list 
+            The recording of the label point shoud be a list of images and labels
+
+        bc: BinaryCamera
+
+        rollouts: bool 
+            If True will save to a rollout directory instead of Supervisor (Default False)
         """
-        IPython.embed()
+      
         if rollouts:
             name = self.next_rollout(rollouts)
             path = self.Options.rollouts_dir + name + '/'
