@@ -1,3 +1,10 @@
+'''
+Class to handle test and training data for the neural network
+
+Author : Jonathan Lee
+
+'''
+
 import random
 import numpy as np
 import numpy.linalg as LA
@@ -8,34 +15,18 @@ import IPython
 import sys
 
 
-
-class InputData():
-
-    def __init__(self, train_d, test_d):
-        
-
-        random.shuffle(self.train_data)
-        random.shuffle(self.test_data)
-
-
-    def next_train_batch(self, n):
-        if self.i + n > len(self.train_data):
-            self.i = 0
-            random.shuffle(self.train_data)
-        batch = self.train_data[self.i:n+self.i]
-        batch = zip(*batch)
-        self.i = self.i + n
-        return list(batch[0]), list(batch[1])
-    
-    def next_test_batch(self):
-        batch = self.test_data
-        batch = zip(*batch)
-        return list(batch[0]), list(batch[1])
-
-
-
-
 def process_out(n):
+    '''
+    Computes argmax of a numpy array
+
+    Parameters
+    ----------
+    n : numpy array
+
+    Returns 
+    -------
+    out: int
+    '''
     out = np.argmax(n)
 
     return out
@@ -43,9 +34,22 @@ def process_out(n):
 
 def im2tensor(im,channels=1):
     """
-        convert 3d image (height, width, 3-channel) where values range [0,255]
-        to appropriate pipeline shape and values of either 0 or 1
-        cv2 --> tf
+    convert 3d image (height, width, 3-channel) where values range [0,255]
+    to appropriate pipeline shape and values of either 0 or 1
+    cv2 --> tf
+
+    Prameters
+    ---------
+    im : numpy array 
+        matrix with shape of image
+
+    channels : int
+        number of channels into the network (Default 1)
+
+    Returns
+    -------
+    numpy array
+        image converted to the correct tensor shape
     """
     shape = np.shape(im)
     h, w = shape[0], shape[1]
@@ -57,13 +61,13 @@ def im2tensor(im,channels=1):
 
 def parse(filepath, stop=-1):
     """
-        Parses file containing paths and labels into list
-        of tupals in the form of:
-        
-        data =  [ 
-                    (path, [label1, label2 ... ])
-                    ...
-                ]
+    Parses file containing paths and labels into list
+    of tupals in the form of:
+    
+    data =  [ 
+                (path, [label1, label2 ... ])
+                ...
+            ]
     """
     f = open(filepath, 'r')
     tups = []
@@ -78,9 +82,11 @@ def parse(filepath, stop=-1):
             break            
     return tups
 
-class IMData(InputData):
+class IMData():
     
     def __init__(self, train_path, test_path,channels=1):
+
+
         self.train_tups = parse(train_path)
         self.test_tups = parse(test_path)
 
