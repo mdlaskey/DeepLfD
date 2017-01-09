@@ -1,4 +1,8 @@
+''''
+File to collect data for a neural network policy
 
+Author: Michael Laskey
+'''
 from alan.control.yumi_subscriber import YuMiSubscriber
 import time, os, pygame
 import IPython
@@ -15,6 +19,14 @@ from deep_lfd.p_pi.p_grasp.com import Grasp_COM as com
 class Demonstration:
 
 	def __init__(self, controller):
+		'''
+		Init class for demonstration collecitng File
+
+		Parameters
+		----------
+		controller: XboxController
+			XboxController commands use to start and stop demonstration
+		'''
 		self.c = controller
 		self.sub = YuMiSubscriber()
 		self.sub.start()
@@ -26,6 +38,10 @@ class Demonstration:
 
 
 	def do_net_training(self):
+		'''
+		Function call to get state and demonstration. See net_train for 
+		more detail
+		'''
 
 		self.net_train.capture_state()
 		self.net_train.collect_data_full()
