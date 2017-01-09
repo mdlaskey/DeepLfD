@@ -116,7 +116,7 @@ class Tesla_COM(Common):
 
         #convert to robot frame
         pos = self.reg.pixel_to_robot(pos[0:2])
-        IPython.embed()
+
         return pos,0
 
     def get_angle(self,cur_pos,tar_pose):

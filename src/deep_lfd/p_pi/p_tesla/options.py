@@ -60,7 +60,7 @@ if __name__ == '__main__':
     b.open(threshTolerance= options.THRESH_TOLERANCE)
 
     while (1):
-        frame = b.read_binary_frame()
+        frame = b.read_color_frame()
         out = frame
         cv2.imshow("camera", out)
         print("reading")
