@@ -27,7 +27,7 @@ if __name__ == '__main__':
     sub.start()
     opt = Options()
     controller = XboxController()
-    name = "pi_1"
+    name = "pi_2"
     KT = Kinesthetic_Trainer(sub,opt,name,controller)
     KT.start_motion(True)
 
