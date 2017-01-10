@@ -1,0 +1,12 @@
+# Kinesthetic Trainer Config
+record: True
+supervisor: Jacky
+fps: 20
+save_every: 50
+cache_path: /mnt/hdd/data/yumi_kinesthetics/.cache
+demo_path: /mnt/hdd/data/experiment_demos/
+output_path: /mnt/hdd/data/yumi_flexpendant/ # /mnt/hdd/data/yumi_kinesthetics/
+data_srcs:
+  webcam:
+    use: True
+    n: 0

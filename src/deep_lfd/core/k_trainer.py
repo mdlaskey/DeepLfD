@@ -1,196 +1,186 @@
 ''''
-Class used to collect demonstrations from the YuMi in Lead-Through 
+Class used to collect demonstrations from the YuMi in Lead-Through
 Mode
 
 Author : Michael Laskey
 '''
 
-import os
+import os, logging
 import IPython
 import numpy as np
-import logging
 from time import sleep
-
-from alan.control import YuMiConstants as YMC
-from alan.control.yumi_subscriber import YuMiSubscriber
-
-from deep_lfd.control.xbox_controller import XboxController
-
-#############CHANGE HERE TO TRAIN A NEW PRIMITIVE##############
-from deep_lfd.k_pi.k_box.options import Box_Options as Options
-
+from core import YamlConfig
+from perception import OpenCVCameraSensor
+from yumipy import YuMiSubscriber, YuMiRobot
+from yumi_teleop import DemoWrapper, TeleopExperimentLogger, QueueEventsSub
+from core import DataStreamSyncer, DataStreamRecorder
+from deep_lfd.control import XboxController
 
 class Kinesthetic_Trainer:
 
-    def __init__(self,sub,options,name,controller,only_goal=False, init_state = False):
+    def __init__(self, options, controller, args, only_goal=False):
         '''
-        Initialization class for Kinesthic Trainer 
+        Initialization class for Kinesthic Trainer
 
         Parameters
         ----------
-        sub : YuMiSubscriber
-            Instance of YuMiScriber that is started 
+        options : Options
+            Instance of Options class
 
-        options : Options 
-            Instance of Options class 
+        controller : XboxController
+            Instance of XboxController class
 
-        controller : XboxController 
-            Instance of XboxController class 
+        args : parser arguments
+            Parsed arguments from Kin_Trainer
 
-        only_goal : bool 
+        only_goal : bool TODO: Implement
             Specifies whether or not to capture the goal state only (Defaults to False)
-
-        init_state : bool
-            Leave as False
-
         '''
-
-        logging.getLogger().setLevel(YMC.LOGGING_LEVEL)
-
-        self._sub = sub
-
-        self.only_goal = only_goal
-        self.init_state = init_state
-
-        # whatre these values doing...
-        self._controller = controller
-
-        # will probably need to initialize these differently
-        self._statesR = []
-        self._statesL = []
-        self._timingsR = []
-        self._timingsL = []
-
+        logging.getLogger().setLevel(logging.INFO)
         self.opt = options
-        self.name = name
-        if not os.path.exists(self.opt.policies_dir):
-            os.makedirs(self.opt.policies_dir)
-        self.fname_r = self.opt.policies_dir+name+"R"
-        self.fname_l = self.opt.policies_dir+name+"L"
+        self.controller = controller
+        self.only_goal = only_goal
+        self.cfg_path = args.config_path
+        self.cfg = YamlConfig(self.cfg_path)
+
+        self.demo_name = args.demo_name
+        self.demo_filename = os.path.join(self.cfg['demo_path'], '{0}.py'.format(self.demo_name))
+        if not os.path.exists(self.demo_filename):
+            raise ValueError("Demonstration file path not found! Tried {0}".format(demo_filename))
+
+        # setting up logger
+        self.logger = TeleopExperimentLogger(self.cfg['output_path'], self.cfg['supervisor'])
+
+        _ = raw_input("Please start server so setup motions can be performed. Click [ENTER] to confirm.")
+        self.yumi = YuMiRobot()
+
+        demo_obj = DemoWrapper.load(self.demo_filename, self.yumi)
+        logging.info("Performing setup motions...")
+        demo_obj.setup()
+        logging.info("Done!")
+        try:
+            self.yumi.stop()
+        except Exception:
+            pass
+
+        self.ysub = YuMiSubscriber()
+        self.ysub.start()
+
+        self.datas = {}
+        self.all_datas = []
+
+        cache_path, save_every = self.cfg['cache_path'], self.cfg['save_every']
+
+        if self.cfg['data_srcs']['webcam']['use']:
+            self.webcam = OpenCVCameraSensor(self.cfg['data_srcs']['webcam']['n'])
+            self.webcam.start()
+            self.datas['webcam'] = DataStreamRecorder('webcam', self.webcam.frames, cache_path=cache_path, save_every=save_every)
+            self.all_datas.append(self.datas['webcam'])
+
+        self.datas['poses'] = {
+            'left': DataStreamRecorder('poses_left', self.ysub.left.get_pose, cache_path=cache_path, save_every=save_every),
+            'right': DataStreamRecorder('poses_right', self.ysub.right.get_pose, cache_path=cache_path, save_every=save_every)
+        }
+        self.datas['states'] = {
+            'left': DataStreamRecorder('states_left', self.ysub.left.get_state, cache_path=cache_path, save_every=save_every),
+            'right': DataStreamRecorder('states_right', self.ysub.right.get_state, cache_path=cache_path, save_every=save_every)
+        }
+        self.datas['torques'] = {
+            'left': DataStreamRecorder('torques_left', self.ysub.left.get_pose, cache_path=cache_path, save_every=save_every),
+            'right': DataStreamRecorder('torques_right', self.ysub.right.get_pose, cache_path=cache_path, save_every=save_every)
+        }
+
+        self.grippers_bool = {
+            'left': QueueEventsSub(),
+            'right': QueueEventsSub()
+        }
+
+        self.datas['grippers_bool'] = {
+            'left': DataStreamRecorder('grippers_bool_left', self.grippers_bool['left'].get_event, cache_path=cache_path, save_every=save_every),
+            'right': DataStreamRecorder('grippers_bool_right', self.grippers_bool['right'].get_event, cache_path=cache_path, save_every=save_every)
+        }
+
+        self.all_datas.extend([
+            self.datas['grippers_bool']['left'],
+            self.datas['grippers_bool']['right'],
+            self.datas['poses']['left'],
+            self.datas['poses']['right'],
+            self.datas['states']['left'],
+            self.datas['states']['right'],
+            self.datas['torques']['left'],
+            self.datas['torques']['right']
+        ])
+
+        self.syncer = DataStreamSyncer(self.all_datas, self.cfg['fps'])
+        self.syncer.start()
+        logging.info("Waiting for initial flush...")
+        sleep(3)
+        self.syncer.pause()
+        self.syncer.flush()
+        logging.info("Done!")
+
+    def _stop(self):
+        self.syncer.stop()
+        self.ysub.stop()
+        try:
+            self.webcam.stop()
+        except Exception:
+            pass
 
     def start_motion(self, collect_timing=False):
         '''
-        Starts recording the moitons of teh YuMi's Arms
+        Starts recording the moitons of the YuMi's Arms
 
         Parameters
         ----------
-        collect_timing : bool
+        collect_timing : bool #TODO: Implement
             Specifies whether to also record timestamps (Defaults False)
         '''
+        _ = raw_input("Please stop server and ready demonstration.\nClick [ENTER] to begin data collection.")
+        logging.info("COLLECTING STARTED")
 
-        low_pass = 250
-        count = 0
-
-        print "COLLECTING STARTED"
-
+        self.syncer.resume(reset_time=True)
         while True:
-            controls = self._controller.getUpdates()
-            stop = self.detect_stop(controls)
-            if stop:
-                if not self.init_state:
-                    self.save_trajectory()
+            controls = self.controller.getUpdates()
+            if controls == None: # stopping recording
+                logging.info("Collection stopped!")
+                self.syncer.pause()
+                self.logger.save_demo_data(self.demo_name,
+                                           self.cfg['supervisor'],
+                                           self.demo_filename,
+                                           self.cfg_path,
+                                           self.all_datas,
+                                           self.cfg['fps'])
+                self.syncer.stop()
+                self.ysub.stop()
+                _ = raw_input("Please start server to perform takedown motions. Click [ENTER] to confirm.")
+                self.yumi = YuMiRobot()
+                demo_obj = DemoWrapper.load(self.demo_filename, self.yumi)
+                logging.info("Performing setup motions...")
+                demo_obj.takedown()
+                self.yumi.stop()
                 break
-            else:
-                if(count == low_pass):
-                    self.collect_state(collect_timing)
-                    count = 0
-                else:
-                    count += 1
-
-
-
-    def collect_state(self, collect_timing=False):
-        '''
-        Reads the current joint angles of the YuMi arms
-        and calls store functions to save values
-
-        Parameters
-        ----------
-        collect_timing : bool
-            Specifies whether to also record timestamps (Defaults False)
-        '''
-        timeLeft, pose_l = self._sub.left.get_state()
-        timeRight, pose_r = self._sub.right.get_state()
-
-        self.store_state(pose_r, pose_l)
-        if (collect_timing == True):
-            self.store_timing(timeLeft, timeRight)
-            
-        
-    def store_state(self, stateR, stateL):
-        '''
-        Saves the current joint angles to the lists
-
-        Parameters
-        ----------
-        statesR : YuMiState
-
-        statesL : YuMiState
-
-        '''
-        self._statesR.append(stateR.joints)
-        self._statesL.append(stateL.joints)
-
-    def store_timing(self, timeLeft, timeRight):
-        '''
-        Saves the current timestamps to the designated lists
-
-        Parameters
-        ----------
-        timeLeft : float
-
-        timeRight : float
-
-        '''
-        self._timingsL.append(timeLeft)
-        self._timingsR.append(timeRight)
-
-    def save_trajectory(self):
-        '''
-        Saves the data to the specifed file
-
-        '''
-
-        if self.only_goal:
-            # only store goal state
-            np.save(self.fname_r, self._statesR[-1])
-            np.save(self.fname_l, self._statesL[-1])
-
-        else:
-            np.save(self.fname_r, self._statesR)
-            np.save(self.fname_l, self._statesL)
-
-        print("Trajectories stored!")
-
-
-    def detect_stop(self, controls):
-        '''
-        Reads the current controls from teh Xbox and returns 
-        if the user wants to stop the recording
-
-        Parameters
-        ----------
-        controls : list
-
-        Returns 
-        -------
-        bool 
-            False if not stop recorded, True Otherwise
-
-        '''
-        stop = False
-        if controls == None:
-            return None, True
-        return stop
-    
-
-if __name__ == '__main__':
-
-    sub = YuMiSubscriber()
-    sub.start()
-    opt = Options()
-    controller = XboxController()
-    name = "pi_6"
-    KT = Kinesthetic_Trainer(sub,opt,name,controller)
-    KT.start_motion(True)
-
+            elif 1 in controls[2:]: # one of the gripper buttons have been pressed
+                self.syncer.pause()
+                while True:
+                    _ = raw_input("Please start server. Hit [ENTER] to confirm.")
+                    try:
+                        self.yumi = YuMiRobot()
+                        break
+                    except Exception:
+                        logging.error("Server not started!")
+                if controls[2]:
+                    self.grippers_bool['left'].put_event('close_gripper')
+                    self.yumi.left.close_gripper()
+                elif controls[3]:
+                    self.grippers_bool['left'].put_event('open_gripper')
+                    self.yumi.left.open_gripper()
+                elif controls[4]:
+                    self.grippers_bool['right'].put_event('close_gripper')
+                    self.yumi.right.close_gripper()
+                elif controls[5]:
+                    self.grippers_bool['right'].put_event('open_gripper')
+                    self.yumi.right.open_gripper()
+                self.yumi.stop()
+                _ = raw_input("Please stop server. Hit [ENTER] to confirm.")
+                self.syncer.resume()
