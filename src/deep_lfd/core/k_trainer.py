@@ -49,10 +49,17 @@ class Kinesthetic_Trainer:
         if not os.path.exists(self.demo_filename):
             raise ValueError("Demonstration file path not found! Tried {0}".format(self.demo_filename))
 
+        self.save_file_paths = [
+            self.demo_filename,
+            self.cfg_path
+        ]
+
         # setting up logger
         self.logger = TeleopExperimentLogger(self.cfg['output_path'], self.cfg['supervisor'])
         _ = raw_input("Please start server so setup motions can be performed. Click [ENTER] to confirm.")
         self.yumi = YuMiRobot()
+        self.yumi.set_v(self.cfg['v'])
+        self.yumi.set_z(self.cfg['z'])
 
         demo_obj = DemoWrapper.load(self.demo_filename, self.yumi)
         logging.info("Performing setup motions...")
@@ -76,6 +83,7 @@ class Kinesthetic_Trainer:
             self.webcam.start()
             self.datas['webcam'] = DataStreamRecorder('webcam', self.webcam.frames, cache_path=cache_path, save_every=save_every)
             self.all_datas.append(self.datas['webcam'])
+            self.save_file_paths.append(self.cfg['data_srcs']['webcam']['T_path'])
 
         self.datas['poses'] = {
             'left': DataStreamRecorder('poses_left', self.ysub.left.get_pose, cache_path=cache_path, save_every=save_every),
@@ -126,7 +134,6 @@ class Kinesthetic_Trainer:
             self.webcam.stop()
         except Exception:
             pass
-        print 'hello'
 
     def start_motion(self, collect_timing=False):
         '''
@@ -149,8 +156,7 @@ class Kinesthetic_Trainer:
                 self.syncer.pause()
                 self.logger.save_demo_data(self.demo_name,
                                            self.cfg['supervisor'],
-                                           self.demo_filename,
-                                           self.cfg_path,
+                                           self.save_file_paths,
                                            self.all_datas,
                                            self.cfg['fps'])
                 self._stop()

@@ -1,6 +1,11 @@
 # Kinesthetic Trainer Config
 record: True
-supervisor: Jacky
+
+# robot controls
+v: 1500
+z: fine
+
+supervisor: Jacky2
 fps: 20
 save_every: 50
 cache_path: /mnt/hdd/data/yumi_kinesthetics/.cache
@@ -8,5 +13,6 @@ demo_path: /mnt/hdd/data/experiment_demos/
 output_path: /mnt/hdd/data/yumi_flexpendant/ # /mnt/hdd/data/yumi_kinesthetics/
 data_srcs:
   webcam:
+    T_path: '/home/autolab/Public/alan/calib/webcam_overhead/webcam_overhead_to_world.tf'
     use: True
     n: 0
