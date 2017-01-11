@@ -37,6 +37,7 @@ class Kinesthetic_Trainer:
             Specifies whether or not to capture the goal state only (Defaults to False)
         '''
         logging.getLogger().setLevel(logging.INFO)
+
         self.opt = options
         self.controller = controller
         self.only_goal = only_goal
@@ -46,11 +47,10 @@ class Kinesthetic_Trainer:
         self.demo_name = args.demo_name
         self.demo_filename = os.path.join(self.cfg['demo_path'], '{0}.py'.format(self.demo_name))
         if not os.path.exists(self.demo_filename):
-            raise ValueError("Demonstration file path not found! Tried {0}".format(demo_filename))
+            raise ValueError("Demonstration file path not found! Tried {0}".format(self.demo_filename))
 
         # setting up logger
         self.logger = TeleopExperimentLogger(self.cfg['output_path'], self.cfg['supervisor'])
-
         _ = raw_input("Please start server so setup motions can be performed. Click [ENTER] to confirm.")
         self.yumi = YuMiRobot()
 
@@ -126,6 +126,7 @@ class Kinesthetic_Trainer:
             self.webcam.stop()
         except Exception:
             pass
+        print 'hello'
 
     def start_motion(self, collect_timing=False):
         '''
@@ -137,9 +138,10 @@ class Kinesthetic_Trainer:
             Specifies whether to also record timestamps (Defaults False)
         '''
         _ = raw_input("Please stop server and ready demonstration.\nClick [ENTER] to begin data collection.")
-        logging.info("COLLECTING STARTED")
+        logging.info("Collection started!")
 
         self.syncer.resume(reset_time=True)
+        last_controls = self.controller.getUpdates()
         while True:
             controls = self.controller.getUpdates()
             if controls == None: # stopping recording
@@ -151,36 +153,17 @@ class Kinesthetic_Trainer:
                                            self.cfg_path,
                                            self.all_datas,
                                            self.cfg['fps'])
-                self.syncer.stop()
-                self.ysub.stop()
-                _ = raw_input("Please start server to perform takedown motions. Click [ENTER] to confirm.")
-                self.yumi = YuMiRobot()
-                demo_obj = DemoWrapper.load(self.demo_filename, self.yumi)
-                logging.info("Performing setup motions...")
-                demo_obj.takedown()
-                self.yumi.stop()
+                self._stop()
                 break
-            elif 1 in controls[2:]: # one of the gripper buttons have been pressed
-                self.syncer.pause()
-                while True:
-                    _ = raw_input("Please start server. Hit [ENTER] to confirm.")
-                    try:
-                        self.yumi = YuMiRobot()
-                        break
-                    except Exception:
-                        logging.error("Server not started!")
+            button_downs = np.logical_and(np.logical_xor(last_controls, controls), controls)
+            if True in button_downs[2:]: # log gripper event
                 if controls[2]:
                     self.grippers_bool['left'].put_event('close_gripper')
-                    self.yumi.left.close_gripper()
                 elif controls[3]:
                     self.grippers_bool['left'].put_event('open_gripper')
-                    self.yumi.left.open_gripper()
                 elif controls[4]:
                     self.grippers_bool['right'].put_event('close_gripper')
-                    self.yumi.right.close_gripper()
                 elif controls[5]:
                     self.grippers_bool['right'].put_event('open_gripper')
-                    self.yumi.right.open_gripper()
-                self.yumi.stop()
-                _ = raw_input("Please stop server. Hit [ENTER] to confirm.")
-                self.syncer.resume()
+
+            last_controls = controls
