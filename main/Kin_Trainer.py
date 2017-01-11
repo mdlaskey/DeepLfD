@@ -12,6 +12,7 @@ from deep_lfd.core.k_trainer import Kinesthetic_Trainer
 from deep_lfd.k_pi.k_cap.options import Cap_Options as Options
 
 if __name__ == '__main__':
+    logging.getLogger().setLevel(logging.INFO)
     parser = argparse.ArgumentParser(description='Kinesthetic Trainer')
     parser.add_argument('-c', '--config_path', type=str, default='cfg/demo_config.yaml', help='path to config file')
     parser.add_argument('-d', '--demo_name', type=str, help='name of desired demonstration task to train')

@@ -36,7 +36,6 @@ class Kinesthetic_Trainer:
         only_goal : bool TODO: Implement
             Specifies whether or not to capture the goal state only (Defaults to False)
         '''
-        logging.getLogger().setLevel(logging.INFO)
 
         self.opt = options
         self.controller = controller
@@ -55,16 +54,19 @@ class Kinesthetic_Trainer:
         ]
 
         # setting up logger
+        logging.info("Setting up logging and loading demo.")
         self.logger = TeleopExperimentLogger(self.cfg['output_path'], self.cfg['supervisor'])
         _ = raw_input("Please start server so setup motions can be performed. Click [ENTER] to confirm.")
         self.yumi = YuMiRobot()
         self.yumi.set_v(self.cfg['v'])
         self.yumi.set_z(self.cfg['z'])
+        self.yumi.reset_home()
+        self.yumi.open_grippers()
 
         demo_obj = DemoWrapper.load(self.demo_filename, self.yumi)
         logging.info("Performing setup motions...")
         demo_obj.setup()
-        logging.info("Done!")
+        logging.info("Setup motions done!")
         try:
             self.yumi.stop()
         except Exception:
@@ -125,7 +127,7 @@ class Kinesthetic_Trainer:
         sleep(3)
         self.syncer.pause()
         self.syncer.flush()
-        logging.info("Done!")
+        logging.info("Initial flush done!")
 
     def _stop(self):
         self.syncer.stop()
@@ -134,6 +136,7 @@ class Kinesthetic_Trainer:
             self.webcam.stop()
         except Exception:
             pass
+        logging.info("Done!")
 
     def start_motion(self, collect_timing=False):
         '''
@@ -145,14 +148,14 @@ class Kinesthetic_Trainer:
             Specifies whether to also record timestamps (Defaults False)
         '''
         _ = raw_input("Please stop server and ready demonstration.\nClick [ENTER] to begin data collection.")
-        logging.info("Collection started!")
+        logging.info("Data Collection started!")
 
         self.syncer.resume(reset_time=True)
         last_controls = self.controller.getUpdates()
         while True:
             controls = self.controller.getUpdates()
             if controls == None: # stopping recording
-                logging.info("Collection stopped!")
+                logging.info("Data Collection stopped!")
                 self.syncer.pause()
                 self.logger.save_demo_data(self.demo_name,
                                            self.cfg['supervisor'],
