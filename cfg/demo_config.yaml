@@ -8,7 +8,7 @@ z: fine
 supervisor: Jacky2
 fps: 20
 save_every: 50
-cache_path: /mnt/hdd/data/yumi_kinesthetics/.cache
+cache_path: /mnt/hdd/data/.cache
 demo_path: /mnt/hdd/data/experiment_demos/
 output_path: /mnt/hdd/data/yumi_flexpendant/ # /mnt/hdd/data/yumi_kinesthetics/
 data_srcs:

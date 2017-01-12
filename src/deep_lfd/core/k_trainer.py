@@ -67,11 +67,9 @@ class Kinesthetic_Trainer:
         logging.info("Performing setup motions...")
         demo_obj.setup()
         logging.info("Setup motions done!")
-        try:
-            self.yumi.stop()
-        except Exception:
-            pass
+        self.yumi.stop()
 
+        logging.info("Establishing data sources..")
         self.ysub = YuMiSubscriber()
         self.ysub.start()
 
@@ -96,8 +94,8 @@ class Kinesthetic_Trainer:
             'right': DataStreamRecorder('states_right', self.ysub.right.get_state, cache_path=cache_path, save_every=save_every)
         }
         self.datas['torques'] = {
-            'left': DataStreamRecorder('torques_left', self.ysub.left.get_pose, cache_path=cache_path, save_every=save_every),
-            'right': DataStreamRecorder('torques_right', self.ysub.right.get_pose, cache_path=cache_path, save_every=save_every)
+            'left': DataStreamRecorder('torques_left', self.ysub.left.get_torque, cache_path=cache_path, save_every=save_every),
+            'right': DataStreamRecorder('torques_right', self.ysub.right.get_torque, cache_path=cache_path, save_every=save_every)
         }
 
         self.grippers_bool = {
@@ -124,10 +122,10 @@ class Kinesthetic_Trainer:
         self.syncer = DataStreamSyncer(self.all_datas, self.cfg['fps'])
         self.syncer.start()
         logging.info("Waiting for initial flush...")
-        sleep(3)
+        sleep(1)
         self.syncer.pause()
         self.syncer.flush()
-        logging.info("Initial flush done!")
+        logging.info("Data sources init done!")
 
     def _stop(self):
         self.syncer.stop()
@@ -163,6 +161,19 @@ class Kinesthetic_Trainer:
                                            self.all_datas,
                                            self.cfg['fps'])
                 self._stop()
+                _ = raw_input("Please start server so takedown motions can be performed. Click [ENTER] to confirm.")
+                sleep(3)
+                self.yumi = YuMiRobot()
+                self.yumi.set_v(self.cfg['v'])
+                self.yumi.set_z(self.cfg['z'])
+
+                demo_obj = DemoWrapper.load(self.demo_filename, self.yumi)
+                logging.info("Performing takedown motions...")
+                demo_obj.takedown()
+                self.yumi.reset_home()
+                self.yumi.open_grippers()
+                logging.info("Takedown motions done!")
+                self.yumi.stop()
                 break
             button_downs = np.logical_and(np.logical_xor(last_controls, controls), controls)
             if True in button_downs[2:]: # log gripper event
