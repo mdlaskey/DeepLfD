@@ -161,7 +161,7 @@ class Kinesthetic_Trainer:
                                            self.all_datas,
                                            self.cfg['fps'])
                 self._stop()
-                _ = raw_input("Please start server so takedown motions can be performed. Click [ENTER] to confirm.")
+                _ = raw_input("Please start server so takedown motions can be performed. Click [ENTER] to confirm.\n")
                 sleep(3)
                 self.yumi = YuMiRobot()
                 self.yumi.set_v(self.cfg['v'])
