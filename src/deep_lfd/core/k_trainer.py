@@ -11,7 +11,7 @@ import numpy as np
 from time import sleep
 from core import YamlConfig
 from perception import OpenCVCameraSensor
-from yumipy import YuMiSubscriber, YuMiRobot
+from yumipy import YuMiSubscriber, YuMiRobot, YuMiGripper
 from yumi_teleop import DemoWrapper, TeleopExperimentLogger, QueueEventsSub
 from core import DataStreamSyncer, DataStreamRecorder
 from deep_lfd.control import XboxController
@@ -68,6 +68,11 @@ class Kinesthetic_Trainer:
         demo_obj.setup()
         logging.info("Setup motions done!")
         self.yumi.stop()
+
+        self.grippers = {
+            'left': YuMiGripper('left'),
+            'right': YuMiGripper('right')
+        }
 
         logging.info("Establishing data sources..")
         self.ysub = YuMiSubscriber()
@@ -130,6 +135,8 @@ class Kinesthetic_Trainer:
     def _stop(self):
         self.syncer.stop()
         self.ysub.stop()
+        self.grippers['left'].stop()
+        self.grippers['right'].stop()
         try:
             self.webcam.stop()
         except Exception:
@@ -179,11 +186,15 @@ class Kinesthetic_Trainer:
             if True in button_downs[2:]: # log gripper event
                 if controls[2]:
                     self.grippers_bool['left'].put_event('close_gripper')
+                    self.grippers['left'].close()
                 elif controls[3]:
                     self.grippers_bool['left'].put_event('open_gripper')
+                    self.grippers['left'].open()
                 elif controls[4]:
                     self.grippers_bool['right'].put_event('close_gripper')
+                    self.grippers['right'].close()
                 elif controls[5]:
                     self.grippers_bool['right'].put_event('open_gripper')
+                    self.grippers['right'].open()
 
             last_controls = controls
