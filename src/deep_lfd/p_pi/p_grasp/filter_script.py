@@ -5,17 +5,17 @@ import IPython
 import cv2
 
 
-from alan.synthetic.synthetic_translation import transform_image
-from alan.synthetic.synthetic_rotation import rotate_images
-from alan.rgbd.registration_wc import RegWC
-from alan.synthetic.synthetic_util import re_binarize
+from deep_lfd.synthetic.synthetic_translation import transform_image
+from deep_lfd.synthetic.synthetic_rotation import rotate_images
+from deep_lfd.rgbd.registration_wc import RegWC
+from deep_lfd.synthetic.synthetic_util import re_binarize
 
-from alan.synthetic.filters import apply_all
+from deep_lfd.synthetic.filters import apply_all
 import numpy as np, argparse
 #Things to change
 
-from alan.core.points import Point
-from alan.p_grasp.options import Grasp_Options as Options
+
+from deep_lfd.p_pi.p_grasp.options import Grasp_Options as Options
 
 
 
@@ -63,7 +63,7 @@ class Filter_Gen:
         gray_m_b= filters[2]
         cv2.imwrite(self.options.gray_mask_binned_dir+name,gray_m_b)
 
-        #rgb binned
+        #rgb masked
         rgb_m_b= filters[3]
         cv2.imwrite(self.options.rgb_mask_dir+name,rgb_m_b)
 
