@@ -35,6 +35,8 @@ class Compile_Sup:
         deltas[0] = float(deltas[0])
         deltas[1] = float(deltas[1])
         deltas[2] = float(deltas[2])
+        deltas[3] = float(deltas[3])
+
         deltas[0] = (deltas[0]-constants[2])/constants[0]
         deltas[1] = (deltas[1]-constants[3])/constants[1]
 
@@ -45,10 +47,10 @@ class Compile_Sup:
             deltas[1] = np.sign(deltas[1])*1.0
 
 
-        deltas[2] = (deltas[2] - self.Options.ROT_MIN)/((self.Options.ROT_MAX - self.Options.ROT_MIN)/2) - 1
+        deltas[2] = (deltas[2] - self.Options.ROT_MIN)/((self.Options.ROT_MAX - self.Options.ROT_MIN)/2.0) - 1
 
         if(len(deltas) == 4):
-            deltas[2] = (deltas[2] - self.Options.Z_MIN)/((self.Options.Z_MAX - self.Options.Z_MIN)/2) - 1
+            deltas[3] = (deltas[3] - self.Options.Z_MIN)/((self.Options.Z_MAX - self.Options.Z_MIN)/2.0) - 1
 
 
 
@@ -81,12 +83,13 @@ class Compile_Sup:
             l = line.split()
             cur_rollout = self.get_rollout(l[0])
 
-            #if(cur_rollout != p_rollout):
-            p_rollout = cur_rollout
-            if random.random() > .2:
-                train = True
-            else:
-                train = False
+
+            if(cur_rollout != p_rollout):
+                p_rollout = cur_rollout
+                if random.random() > .2:
+                    train = True
+                else:
+                    train = False
 
             path = img_path
             labels = line.split()
@@ -94,8 +97,8 @@ class Compile_Sup:
             print labels
         
 
-
-            deltas = self.scale(labels[1:4],scale_constants)
+           
+            deltas = self.scale(labels[1:len(labels)],scale_constants)
 
             line = labels[0] + " "
             for bit in deltas:

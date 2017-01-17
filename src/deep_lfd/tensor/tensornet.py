@@ -36,9 +36,11 @@ class TensorNet():
     def __init__(self):
         self.test_loss = 0
         self.train_loss = 0
-        self.Options = options()
-        self.analysis = Analysis()
-        raise NotImplementedError
+        # self.Options = options()
+        # self.analysis = Analysis()
+        self.train_log = []
+        self.test_log = []
+        # raise NotImplementedError
 
     def save(self, sess, save_path=None):
         
@@ -52,12 +54,13 @@ class TensorNet():
 
         save_path = save_path + model_name
         
-        save_path = saver.save(sess, save_path)
-        print "Saved model to "+save_path
+        # save_path = saver.save(sess, save_path)
+        # print "Saved model to "+save_path
         self.recent = save_path
         return save_path
 
-
+    def get_logs(self):
+        return self.train_log, self.test_log
     def clean_up(self):
         tf.reset_default_graph()
         return 
@@ -79,7 +82,7 @@ class TensorNet():
         return sess
 
 
-    def optimize(self, iterations, data, unbiased=False, path=None, batch_size=100, test_print=20, save=True):
+    def optimize(self, iterations, data, unbiased=False, path=None, batch_size=100, test_print=10, save=True):
         """
             optimize net for [iterations]. path is either absolute or 
             relative to current working directory. data is InputData object (see class for details)
@@ -108,8 +111,12 @@ class TensorNet():
                     
                         #print "TRAIN: X ERR "+ str(x_loss)+" Y ERR "+str(y_loss)
                         print "[ Iteration " + str(i) + " ] Training loss: " + str(batch_loss)
+                        
                         if(math.isnan(batch_loss)):
                             raise Exception('Loss Exploded')
+                        else:
+                            self.train_log.append(batch_loss)
+
                     if i % test_print == 0:
                         test_batch = data.next_test_batch()
                         test_ims, test_labels = test_batch
@@ -120,6 +127,7 @@ class TensorNet():
                         
                         #print "TEST: X ERR "+ str(x_loss)+" Y ERR "+str(y_loss)
                         print "[ Iteration " + str(i) + " ] Test loss: " + str(test_loss)
+                        self.test_log.append(test_loss)
                     self.train.run(feed_dict=feed_dict)
 
 

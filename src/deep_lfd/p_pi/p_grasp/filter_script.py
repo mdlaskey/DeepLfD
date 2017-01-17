@@ -75,6 +75,9 @@ class Filter_Gen:
         rgb_gray= filters[5]
         cv2.imwrite(self.options.rgb_gray_dir+name,rgb_gray)
 
+        #binary
+        binary = filters[6]
+        cv2.imwrite(self.options.binary_dir+name,binary)
 
     def generate_filters(self,read_path,rollout):
         f = open(read_path,"r")
