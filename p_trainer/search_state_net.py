@@ -21,18 +21,19 @@ import sys, os
 
 
 import IPython
-from tensor import inputdata
-from alan.p_trainer.compile_sup import Compile_Sup #specific: imports compile_reg from sup
+from deep_lfd.tensor import inputdata
+from compile_sup import Compile_Sup #specific: imports compile_reg from sup
 #from alan.rgbd.binaryThreshBox import transform_image
 import numpy as np, argparse
-from alan.synthetic.affine_synthetic import Affine_Synthetic
+# from alan.synthetic.affine_synthetic import Affine_Synthetic
+from plotter import plot_net
 
 
 #######NETWORK FILES####################
 #specific: imports options from specific options file
-from alan.p_grasp.options import Grasp_Options as options 
+from deep_lfd.p_pi.p_grasp.options import Grasp_Options as options 
 #specific: fetches specific net file
-from tensor.net_grasp import Net_Grasp as Net 
+from deep_lfd.tensor.net_grasp import Net_Grasp as Net 
 
 
 #########SYNTHETIC PARAMS##########
@@ -50,7 +51,7 @@ max_rot = 20
 
 ########TRAINING PAPRAMETERS##########
 batch_size = 150
-iterations = 3000
+iterations = 500
 
 ########################################################
 
@@ -107,9 +108,9 @@ if __name__ == '__main__':
         print "please enter a last value with -l (not inclusive)"
         sys.exit()
 
-
-    aff_syn = Affine_Synthetic(Options,translation,rotation,max_trans,max_rot)
-    aff_syn.generate_data(first,last)
+    if translation or rotation:
+        aff_syn = Affine_Synthetic(Options,translation,rotation,max_trans,max_rot)
+        aff_syn.generate_data(first,last)
 
 
     outfile = open(Options.deltas_file, 'w+') #specific: fetches specific directory. CHANGE
@@ -137,13 +138,17 @@ if __name__ == '__main__':
 
     outfile.close()
 
+    Options.set_filter_paths()
+
     #Try Different Filters 
     #Binaries Filter 
-    CS.compile_reg(Options.binaries_dir)
+    CS.compile_reg(Options.binary_dir)
 
     data = inputdata.IMData(Options.train_file, Options.test_file) 
     net = Net(Options)  
     net.optimize(iterations,data, batch_size=batch_size)
+    train_log, test_log = net.get_logs()
+    plot_net(train_log, test_log, "Binary", Options.setup_dir + "/plots", 0)
 
     #Gray 
     CS.compile_reg(Options.gray_dir)
@@ -151,6 +156,8 @@ if __name__ == '__main__':
     data = inputdata.IMData(Options.train_file, Options.test_file) 
     net = Net(Options)  
     net.optimize(iterations,data, batch_size=batch_size)
+    train_log, test_log = net.get_logs()
+    plot_net(train_log, test_log, "Gray", Options.setup_dir + "/plots", 1)
 
     #Color
     CS.compile_reg(Options.originals_dir)
@@ -158,6 +165,8 @@ if __name__ == '__main__':
     data = inputdata.IMData(Options.train_file, Options.test_file) 
     net = Net(Options)  
     net.optimize(iterations,data, batch_size=batch_size)
+    train_log, test_log = net.get_logs()
+    plot_net(train_log, test_log, "Color", Options.setup_dir + "/plots", 2)
 
     #Gray Mask
     CS.compile_reg(Options.gray_mask_dir)
@@ -165,6 +174,8 @@ if __name__ == '__main__':
     data = inputdata.IMData(Options.train_file, Options.test_file) 
     net = Net(Options)  
     net.optimize(iterations,data, batch_size=batch_size)
+    train_log, test_log = net.get_logs()
+    plot_net(train_log, test_log, "Gray Mask", Options.setup_dir + "/plots", 3)
 
     #Gray Mask Binned
     CS.compile_reg(Options.gray_mask_binned_dir)
@@ -172,28 +183,33 @@ if __name__ == '__main__':
     data = inputdata.IMData(Options.train_file, Options.test_file) 
     net = Net(Options)  
     net.optimize(iterations,data, batch_size=batch_size)
+    train_log, test_log = net.get_logs()
+    plot_net(train_log, test_log, "Gray Mask Binned", Options.setup_dir + "/plots", 4)
 
-
-    #Gray Mask Traced
-    CS.compile_reg(Options.gray_mask_traced_dir)
+    #RGB gray
+    CS.compile_reg(Options.rgb_gray_dir)
 
     data = inputdata.IMData(Options.train_file, Options.test_file) 
-    net = Net(Options)  
+    net = Net(Options, channels = 3)  
     net.optimize(iterations,data, batch_size=batch_size)
+    train_log, test_log = net.get_logs()
+    plot_net(train_log, test_log, "RGB Gray", Options.setup_dir + "/plots", 5)
 
     #RGB Mask 
     CS.compile_reg(Options.rgb_mask)
 
     data = inputdata.IMData(Options.train_file, Options.test_file) 
-    net = Net(Options)  
+    net = Net(Options, channels = 3)  
     net.optimize(iterations,data, batch_size=batch_size)
+    train_log, test_log = net.get_logs()
+    plot_net(train_log, test_log, "RGB Mask", Options.setup_dir + "/plots", 6)
 
-    #RGB Mask 
-    CS.compile_reg(Options.rgb_mask)
+    #RGB Mask binned
+    CS.compile_reg(Options.rgb_mask_binned)
 
     data = inputdata.IMData(Options.train_file, Options.test_file) 
-    net = Net(Options)  
+    net = Net(Options, channels = 3)  
     net.optimize(iterations,data, batch_size=batch_size)
-
-
+    train_log, test_log = net.get_logs()
+    plot_net(train_log, test_log, "RGB Mask Binned", Options.setup_dir + "/plots", 7)
 

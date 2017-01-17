@@ -28,12 +28,12 @@ class Compile_Sup:
         x_center = low_bound[0] + x_mid_range
         y_center = low_bound[1] + y_mid_range
 
-       
+
         return [x_mid_range,y_mid_range,x_center,y_center]
 
 
     def get_range_ps(self):
-        
+
 
         #Convert to Pixels
         low_bound = np.array([self.Options.LOWER_X_P_BOUNDS,self.Options.LOWER_Y_P_BOUNDS])
@@ -45,7 +45,7 @@ class Compile_Sup:
         x_center = low_bound[0] + x_mid_range
         y_center = low_bound[1] + y_mid_range
 
-       
+
         return [x_mid_range,y_mid_range,x_center,y_center]
 
     def scale(self,deltas,constants):
@@ -53,7 +53,11 @@ class Compile_Sup:
         deltas[1] = float(deltas[1])
         deltas[2] = float(deltas[2])
         deltas[3] = float(deltas[3])
-        
+<<<<<<< 0e54ed0d5e952ca3658c8f90d81538386b88fadc
+
+=======
+
+>>>>>>> updated for izzy compatibility
         deltas[0] = (deltas[0]-constants[2])/constants[0]
         deltas[1] = (deltas[1]-constants[3])/constants[1]
 
@@ -64,11 +68,10 @@ class Compile_Sup:
             deltas[1] = np.sign(deltas[1])*1.0
 
 
-        deltas[2] = (deltas[2] - self.Options.ROT_MIN)/((self.Options.ROT_MAX - self.Options.ROT_MIN)/2.0) - 1.0
+        deltas[2] = (deltas[2] - self.Options.ROT_MIN)/((self.Options.ROT_MAX - self.Options.ROT_MIN)/2.0) - 1
 
         if(len(deltas) == 4):
-            deltas[3] = (deltas[3] - self.Options.Z_MIN)/((self.Options.Z_MAX - self.Options.Z_MIN)/2.0) - 1.0
-
+            deltas[3] = (deltas[3] - self.Options.Z_MIN)/((self.Options.Z_MAX - self.Options.Z_MIN)/2.0) - 1
 
 
         return deltas
@@ -82,10 +85,10 @@ class Compile_Sup:
         train_path = self.Options.train_file
         test_path = self.Options.test_file
         deltas_path = self.Options.deltas_file
-        
+
         if(self.Options.SENSOR == 'PRIMESENSE'):
             scale_constants = self.get_range_ps()
-        else: 
+        else:
             scale_constants = self.get_range()
 
         if(img_path == None):
@@ -115,10 +118,15 @@ class Compile_Sup:
             labels = line.split()
 
             print labels
-        
 
+<<<<<<< 0e54ed0d5e952ca3658c8f90d81538386b88fadc
             end = len(labels)
             deltas = self.scale(labels[1:end],scale_constants)
+=======
+
+
+            deltas = self.scale(labels[1:len(labels)],scale_constants)
+>>>>>>> updated for izzy compatibility
 
             line = labels[0] + " "
             for bit in deltas:

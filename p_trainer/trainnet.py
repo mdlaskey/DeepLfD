@@ -29,7 +29,7 @@ from deep_lfd.tensor import inputdata
 from compile_sup import Compile_Sup 
 import numpy as np, argparse
 from deep_lfd.synthetic.affine_synthetic import Affine_Synthetic
-
+from plotter import plot_net
 
 #######NETWORK FILES TO BE CHANGED#####################
 #specific: imports options from specific options file
@@ -148,4 +148,10 @@ if __name__ == '__main__':
 
     data = inputdata.IMData(Options.train_file, Options.test_file) 
     net = Net(Options)
-    net.optimize(iterations,data, batch_size=batch_size)
+    net.optimize(iterations,data, batch_size=batch_size, test_print = 10)
+
+    ####GET TRAINING AND TEST####
+    train_log, test_log = net.get_logs()
+
+    ############PLOT##############
+    plot_net(train_log, test_log, "Binary", Options.setup_dir + "/plots")

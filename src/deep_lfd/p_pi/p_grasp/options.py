@@ -1,7 +1,7 @@
-from alan.core.options import Options #the imports may need to change on actual computer
+from deep_lfd.core.options import Options #the imports may need to change on actual computer
 import os
-from alan.rgbd.registration_wc import RegWC
-from alan.rgbd.bincam_2D import BinaryCamera 
+from deep_lfd.rgbd.registration_wc import RegWC
+from deep_lfd.rgbd.bincam_2D import BinaryCamera 
 import cv2
 import time
 
@@ -86,8 +86,9 @@ class Grasp_Options(Options):
         if not os.path.exists(self.rgb_gray_dir):
             os.makedirs(self.rgb_gray_dir)
 
-
-
+        self.binary_dir = self.setup_dir + "binaries/"
+        if not os.path.exists(self.binary_dir):
+            os.makedirs(self.binary_dir)
 
 if __name__ == '__main__':
     options = Grasp_Options()
