@@ -28,13 +28,13 @@ def bgBoundsByMode(matrix, tolerance):
     see for reference: http://docs.opencv.org/2.4/doc/tutorials/imgproc/histograms/histogram_calculation/histogram_calculation.html
 
 
-        Paramaters
-        ----------
-        matrix: (n, m, 3) numpy array
-        tolerance:  int
+    Parameters
+    ----------
+    matrix: (n, m, 3) numpy array
+    tolerance:  int
 
-        Returns:
-            two length 3 array 
+    Returns:
+        two length 3 array 
     '''
     dim = 3
 

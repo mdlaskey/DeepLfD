@@ -33,10 +33,10 @@ from deep_lfd.synthetic.affine_synthetic import Affine_Synthetic
 
 #######NETWORK FILES TO BE CHANGED#####################
 #specific: imports options from specific options file
-from deep_lfd.p_pi.p_tesla.options import Tesla_Options as options 
+from deep_lfd.p_pi.p_grasp.options import Grasp_Options as options 
 
 #specific: fetches specific net file
-from deep_lfd.tensor.nets.net_tesla import Net_Tesla as Net 
+from deep_lfd.tensor.nets.net_grasp import Net_Grasp as Net 
 ########################################################
 
 #########SYNTHETIC PARAMS##########
