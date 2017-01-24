@@ -2,6 +2,7 @@
     Network takes in a image and outputs (x,y,theta,z)
     Model for net3
         conv
+        conv
         relu
         fc
         relu

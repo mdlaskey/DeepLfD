@@ -18,7 +18,7 @@ import numpy as np
 
 class  Net_Trainer():
 
-    def __init__(self,com,bincam,net_name,c,sub):
+    def __init__(self,com,net_name,c,sub,bincam = None, depthcam = None):
         """
             Init function for Net_Trainer 
 
@@ -51,6 +51,13 @@ class  Net_Trainer():
 
         sampleFrame = self.bc.read_frame()
 
+        if(not depthcam == None):
+            self.dc = depthcam
+        elif(not bincam == None):
+            self.bc = bincam
+        else: 
+            raise Exception('No Camera model specified')
+
         if(net_name == 'neural_net_0/'):
 
             while (1):
@@ -62,6 +69,7 @@ class  Net_Trainer():
                 frame = self.bc.read_binary_frame()
                 cv2.imshow("cam", frame)
                 cv2.waitKey(30)
+
 
         
     def set_AR_markers(self,net_com):

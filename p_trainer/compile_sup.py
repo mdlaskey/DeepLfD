@@ -81,12 +81,12 @@ class Compile_Sup:
             l = line.split()
             cur_rollout = self.get_rollout(l[0])
 
-            #if(cur_rollout != p_rollout):
-            p_rollout = cur_rollout
-            if random.random() > .2:
-                train = True
-            else:
-                train = False
+            if(cur_rollout != p_rollout):
+                p_rollout = cur_rollout
+                if random.random() > .2:
+                    train = True
+                else:
+                    train = False
 
             path = img_path
             labels = line.split()
