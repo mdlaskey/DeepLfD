@@ -88,11 +88,20 @@ class Affine_Synthetic:
             img = img_d[3]
             #img = re_binarize(img)
 
-            cv2.imwrite(path+rollout+'_frame_'+str(index)+".png",img)
+            img.save(path+rollout+'_frame_'+str(index)+".npy")
 
             print "IMAGE INDEX ", str(index)
 
         return
+
+    def load_images(self,path):
+        if self.options.depth_state:
+            img = DepthImage.load(path)
+        elif 
+            img = BinaryImage.load(path)
+
+        return img
+
 
 
 
@@ -119,6 +128,9 @@ class Affine_Synthetic:
                 self.save_images(imgs)
 
             if(self.rotation):
+                if(not self.translation):
+                    self.load_data(self.options.binaries_dir+line[0])
+
                 cp = np.array([float(line[1]),float(line[2]),float(line[3])])
                 deltas,idx,imgs = rotate_images(imgs,idx,bounds,deltas,cp,max_imgs = self.max_rot)
        

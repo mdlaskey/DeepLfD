@@ -44,7 +44,7 @@ def get_rotations_single(data, step = 20):
         #see for reference: http://docs.opencv.org/trunk/da/d6e/tutorial_py_geometric_transformations.html
         M = cv2.getRotationMatrix2D((center.x, center.y), degree_shift, 1)
 
-        new_img = cv2.warpAffine(img, M, (cols, rows), flags= cv2.INTER_NEAREST)
+        img = data.transform(np.array([0,0]),np.deg2rad(step))
         #new_img = cv.GetQuadrangleSubPix(img,M,(cols, rows))
         # cv2.imshow('debug',new_img)
         # cv2.waitKey(30)
@@ -99,6 +99,11 @@ def rotate_images(imgs,idx,bounds,deltas_i,cp,max_imgs = 20):
             img = r_im[0]
             label = r_im[1]
 
+
+            '''
+
+            TODO FIX WITH REGISTRATION
+            '''
             if(label[0] >= b_l[0] and label[0] <= b_u[0] and label[1] >= b_l[1] and label[1] <= b_u[1]):
                 if(label[2] >= b_r[0] and label[2] <= b_r[1]):
                     deltas.append(label)

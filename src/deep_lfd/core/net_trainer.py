@@ -118,6 +118,8 @@ class  Net_Trainer():
         self.get_images()
         self.record_pose(arm)
 
+
+
     def get_images(self):
         """
             Saves colored images of the workspace, the number is specfied in the options file
@@ -125,13 +127,23 @@ class  Net_Trainer():
         """
         self.frames = []
 
-        #Clear Camera Buffer 
-        for i in range(4):
-            self.bc.read_color_frame()
+        if(not self.bc == None):
+            #Clear Camera Buffer 
+            for i in range(4):
+                self.bc.read_color_frame()
 
-        for i in range(self.com.Options.T):
-            frame = self.bc.read_color_frame()
-            self.frames.append(frame)
+            for i in range(self.com.Options.T):
+                frame = self.bc.read_color_frame()
+                self.frames.append(frame)
+        else:
+            #Clear Camera Buffer 
+            for i in range(4):
+                self.bc.read_color_frame()
+
+            for i in range(self.com.Options.T):
+                color_im,d_img,thumb_img = self.com.get_grasp_state(self.dc)
+                self.frames.append([color_im,d_img,thumb_img])
+
 
     def extract_angle(self,pose):
         """
@@ -164,12 +176,21 @@ class  Net_Trainer():
         """
         while True:
             update = self.c.getUpdates()
-            if(use_binary):
-                state = self.bc.read_binary_frame()
-            else:
-                state = self.bc.read_color_frame()
-            cv2.imshow('state',state )
-            cv2.waitKey(30)
+            if(not self.bc == None)
+                if(use_binary):
+                    state = self.bc.read_binary_frame()
+                else:
+                    state = self.bc.read_color_frame()
+                cv2.imshow('state',state )
+                cv2.waitKey(30)
+            else: 
+
+                color_im,d_img,thumb_img = self.com.get_grasp_state(self.dc)
+
+                vis2d.imshow(color_im)
+                vis2d.show()
+
+           
             if update is None:
                 break;
 
@@ -260,8 +281,10 @@ class  Net_Trainer():
         recording = []
         for i in range(len(self.frames)):
             recording.append([self.frames[i],self.label])
-
-        self.com.save_recording(recording,self.b)
+        if(not self.bc == None):
+            self.com.save_recording(recording,self.b)
+        else: 
+            self.com.save_recording(recording)
 
    
 
