@@ -61,7 +61,7 @@ data_file_path = "/home/autolab/Workspace/rishi_working/echoyumi/data_command.tx
 """
 Get the data command that was spoken to the Echo.
 Possible return values:
-	None, "start", "record", "stop", "pause"
+	None, "start", "record", "stop", "pause", "finish"
 """
 def getDataCommand():
 	f = open(data_file_path, 'r')

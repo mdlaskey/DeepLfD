@@ -1,8 +1,9 @@
 ''''
 Class used to collect demonstrations from the YuMi in Lead-Through 
-Mode
+Mode using the Echo
 
 Author : Michael Laskey
+Modified by: Rishi Kapadia
 '''
 
 import os
@@ -14,7 +15,7 @@ from time import sleep
 from alan.control import YuMiConstants as YMC
 from alan.control.yumi_subscriber import YuMiSubscriber
 
-from deep_lfd.control.xbox_controller import XboxController
+import robot_logger as audio_logger
 
 #############CHANGE HERE TO TRAIN A NEW PRIMITIVE##############
 from deep_lfd.k_pi.k_box.options import Box_Options as Options
@@ -22,7 +23,7 @@ from deep_lfd.k_pi.k_box.options import Box_Options as Options
 
 class Kinesthetic_Trainer:
 
-    def __init__(self,sub,options,name,controller,only_goal=False, init_state = False):
+    def __init__(self,sub,options,only_goal=False, init_state = False):
         '''
         Initialization class for Kinesthic Trainer 
 
@@ -33,9 +34,6 @@ class Kinesthetic_Trainer:
 
         options : Options 
             Instance of Options class 
-
-        controller : XboxController 
-            Instance of XboxController class 
 
         only_goal : bool 
             Specifies whether or not to capture the goal state only (Defaults to False)
@@ -52,9 +50,6 @@ class Kinesthetic_Trainer:
         self.only_goal = only_goal
         self.init_state = init_state
 
-        # whatre these values doing...
-        self._controller = controller
-
         # will probably need to initialize these differently
         self._statesR = []
         self._statesL = []
@@ -62,15 +57,26 @@ class Kinesthetic_Trainer:
         self._timingsL = []
 
         self.opt = options
+
+
+    def init_name(self, name):
+        '''
+        Helper init function to create the recorded file
+
+        Parameters
+        ----------
+        name : string
+        '''
         self.name = name
         if not os.path.exists(self.opt.policies_dir):
             os.makedirs(self.opt.policies_dir)
         self.fname_r = self.opt.policies_dir+name+"R"
         self.fname_l = self.opt.policies_dir+name+"L"
 
+
     def start_motion(self, collect_timing=False):
         '''
-        Starts recording the moitons of teh YuMi's Arms
+        Starts recording the motions of the YuMi's Arms
 
         Parameters
         ----------
@@ -84,8 +90,8 @@ class Kinesthetic_Trainer:
         print "COLLECTING STARTED"
 
         while True:
-            controls = self._controller.getUpdates()
-            stop = self.detect_stop(controls)
+            command = audio_logger.getDataCommand()
+            stop = self.detect_stop(command)
             if stop:
                 if not self.init_state:
                     self.save_trajectory()
@@ -163,34 +169,58 @@ class Kinesthetic_Trainer:
         print("Trajectories stored!")
 
 
-    def detect_stop(self, controls):
+    def detect_stop(self, command):
         '''
-        Reads the current controls from teh Xbox and returns 
+        Reads the current controls from the Echo and returns
         if the user wants to stop the recording
 
         Parameters
         ----------
-        controls : list
+        command : string
 
         Returns 
         -------
         bool 
-            False if not stop recorded, True Otherwise
+            False if stop not recorded, True Otherwise
 
         '''
-        stop = False
-        if controls == None:
-            return None, True
-        return stop
+        if command == "stop" or command == "pause":
+            return True
+        return False
     
+
+    def start_loop(self, collect_timing=False):
+        '''
+        Restarts the Kinesthetic_Trainer motion recorder
+        to record several path trajectories
+
+        Parameters
+        ----------
+        collect_timing : bool
+            Specifies whether to also record timestamps (Defaults False)
+
+        '''
+
+        iteration = 0
+        base_name = "pi_"
+        while True:
+            command = audio_logger.getDataCommand()
+            if command == "start" or command == "record":
+                name = base_name + str(iteration)
+                KT.init_name(name)
+                KT.start_motion(collect_timing)
+                iteration += 1
+            elif command == "finish":
+                break
+            sleep(0.01)  # for stability
+        return
+
 
 if __name__ == '__main__':
 
     sub = YuMiSubscriber()
     sub.start()
     opt = Options()
-    controller = XboxController()
-    name = "pi_6"
-    KT = Kinesthetic_Trainer(sub,opt,name,controller)
-    KT.start_motion(True)
+    KT = Kinesthetic_Trainer(sub,opt)
+    KT.start_loop(True)
 
