@@ -185,6 +185,7 @@ class Kinesthetic_Trainer:
 
         '''
         if command == "stop" or command == "pause":
+            audio_logger.log("Stopped")
             return True
         return False
     
@@ -206,11 +207,13 @@ class Kinesthetic_Trainer:
         while True:
             command = audio_logger.getDataCommand()
             if command == "start" or command == "record":
+                audio_logger.log("Recording")
                 name = base_name + str(iteration)
                 KT.init_name(name)
                 KT.start_motion(collect_timing)
                 iteration += 1
             elif command == "finish":
+                audio_logger.log("All done! I've finished recording your trajectories.")
                 break
             sleep(0.01)  # for stability
         return
