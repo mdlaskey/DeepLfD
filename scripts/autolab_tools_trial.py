@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
 	f_path = 'data/test_images/seg_depth_im_11.npy'
 
-	test_img = Image.open(f_path)
+	test_img = DepthImage.open(f_path)
 
 	IPython.embed()
 
