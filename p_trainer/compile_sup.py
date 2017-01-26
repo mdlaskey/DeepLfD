@@ -31,6 +31,23 @@ class Compile_Sup:
        
         return [x_mid_range,y_mid_range,x_center,y_center]
 
+
+    def get_range_ps(self):
+        
+
+        #Convert to Pixels
+        low_bound = np.array([self.Options.LOWER_X_P_BOUND,self.Option.LOWER_Y_P_BOUND])
+        up_bound = np.array([self.Options.UPPER_X_P_BOUND,self.Option.UPPER_Y_P_BOUND])
+
+        x_mid_range = (up_bound[0] - low_bound[0])/2.0
+        y_mid_range = (up_bound[1] - low_bound[1])/2.0
+
+        x_center = low_bound[0] + x_mid_range
+        y_center = low_bound[1] + y_mid_range
+
+       
+        return [x_mid_range,y_mid_range,x_center,y_center]
+
     def scale(self,deltas,constants):
         deltas[0] = float(deltas[0])
         deltas[1] = float(deltas[1])
@@ -63,7 +80,11 @@ class Compile_Sup:
         train_path = self.Options.train_file
         test_path = self.Options.test_file
         deltas_path = self.Options.deltas_file
-        scale_constants = self.get_range()
+        
+        if(self.Options.SENSOR == 'PRIMESENSE'):
+            scale_constants = self.get_range_ps()
+        else: 
+            scale_constants = self.get_range()
 
         if(img_path == None):
             img_path = self.Options.binaries_dir

@@ -51,6 +51,12 @@ class Affine_Synthetic:
                     infile.close()
 
 
+    def get_bounds_ps(self):
+        rot_bounds = np.array([self.options.ROT_MIN,self.options.ROT_MAX])
+        p_l_b = np.array([self.options.X_LOWER_P_BOUND,self.options.Y_LOWER_P_BOUND])
+        p_u_b = np.array([self.options.X_LOWER_U_BOUND,self.options.Y_LOWER_U_BOUND])
+
+        return p_l_b,p_u_b,rot_bounds
 
     def get_bounds(self):
         low_bound = np.array([self.options.X_LOWER_BOUND,self.options.Y_LOWER_BOUND])
@@ -95,7 +101,7 @@ class Affine_Synthetic:
         return
 
     def load_images(self,path):
-        if self.options.depth_state:
+        if self.options.SENSOR == 'PRIMESENSE':
             img = DepthImage.load(path)
         elif 
             img = BinaryImage.load(path)
@@ -113,7 +119,12 @@ class Affine_Synthetic:
         changes = []
         idx = self.options.T
         i = 0
-        bounds = self.get_bounds()
+
+        if(self.options.SENSOR == 'PRIMESENSE'):
+            bounds = self.get_bounds_ps()
+        else: 
+            bounds = self.get_bounds()
+            
         for line in f:
             f_c.write(line)
             line = line.split()
