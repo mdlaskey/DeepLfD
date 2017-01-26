@@ -11,9 +11,9 @@
 
 
 import tensorflow as tf
-import inputdata
+import deep_lfd.tensor.inputdata
 import random
-from tensornet import TensorNet
+from deep_lfd.tensor.tensornet import TensorNet
 #from alan.p_grasp_align.options import Grasp_AlignOptions as options
 import time
 import datetime
@@ -26,7 +26,7 @@ class Net_Grasp(TensorNet):
         self.channels = channels
         self.Options = options
 
-        self.x = tf.placeholder('float', shape=[None,250,250,self.channels])
+        self.x = tf.placeholder('float', shape=[None,200,200,self.channels])
         self.y_ = tf.placeholder("float", shape=[None, 4])
 
 

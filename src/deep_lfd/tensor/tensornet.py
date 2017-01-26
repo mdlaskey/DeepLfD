@@ -21,7 +21,8 @@
 import tensorflow as tf
 import time
 import datetime
-import inputdata
+from deep_lfd.tensor.inputdata import im2tensor
+import deep_lfd.tensor.inputdata
 import logging
 import IPython
 #import Analysis from analysis
@@ -100,11 +101,16 @@ class TensorNet():
                 for i in range(iterations):               
                     batch = data.next_train_batch(batch_size)
                     ims, labels = batch
+
+                    
                     
                     feed_dict = { self.x: ims, self.y_: labels }
+                   
 
                     if i % 10 == 0:
+                        
                         batch_loss = self.loss.eval(feed_dict=feed_dict)
+                        
                     
                         #print "TRAIN: X ERR "+ str(x_loss)+" Y ERR "+str(y_loss)
                         print "[ Iteration " + str(i) + " ] Training loss: " + str(batch_loss)
@@ -114,13 +120,17 @@ class TensorNet():
                         test_batch = data.next_test_batch()
                         test_ims, test_labels = test_batch
                         test_dict = { self.x: test_ims, self.y_: test_labels }
-
+                        
                         test_loss = self.loss.eval(feed_dict=test_dict)
+                        
                         
                         
                         #print "TEST: X ERR "+ str(x_loss)+" Y ERR "+str(y_loss)
                         print "[ Iteration " + str(i) + " ] Test loss: " + str(test_loss)
-                    self.train.run(feed_dict=feed_dict)
+                    try: 
+                        self.train.run(feed_dict=feed_dict)
+                    except:
+                        i=0#IPython.embed()
 
 
                     # if( i% 5 == 0):
@@ -151,7 +161,7 @@ class TensorNet():
             0-255 and returns controls in four element list
         """
         sess = self.load(var_path=path)
-        im = inputdata.im2tensor(im)
+        im = im2tensor(im)
         shape = np.shape(im)
         im = np.reshape(im, (-1, shape[0], shape[1], shape[2]))
         with sess.as_default():
@@ -173,7 +183,7 @@ class TensorNet():
             accepts batch of 3d images, converts to tensor
             and returns four element list of controls
         """
-        im = inputdata.im2tensor(im,channels)
+        im = im2tensor(im,channels)
         shape = np.shape(im)
         im = np.reshape(im, (-1, shape[0], shape[1], shape[2]))
         with sess.as_default():

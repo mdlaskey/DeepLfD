@@ -12,8 +12,8 @@
 
 import sys
 import tty, termios
-from alan.rgbd.bincam_2D import BinaryCamera 
-from alan.rgbd.registration_wc import RegWC
+from deep_lfd.rgbd.bincam_2D import BinaryCamera 
+from deep_lfd.rgbd.registration_wc import RegWC
 from alan.control import YuMiRobot, YuMiState, YuMiControlException
 from alan.lfd_amazon.amazon_overlay import makeOverlay,generalOverlay
 import time, datetime, os, random, argparse
@@ -23,8 +23,8 @@ import numpy as np
 
 
 #For unit test only 
-from alan.p_hanoi.options import Hanoi_Options as p_options
-from alan.p_hanoi.com import Hanoi_COM as net_com
+from deep_lfd.p_pi.p_grasp_rss.options import Grasp_Options as Options
+from deep_lfd.p_pi.p_grasp_rss.com import Grasp_COM as COM
 
 
 

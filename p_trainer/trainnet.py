@@ -33,7 +33,7 @@ from deep_lfd.synthetic.affine_synthetic import Affine_Synthetic
 
 #######NETWORK FILES TO BE CHANGED#####################
 #specific: imports options from specific options file
-from deep_lfd.p_pi.p_grasp.options import Grasp_Options as options 
+from deep_lfd.p_pi.p_grasp_rss.options import Grasp_Options as options 
 
 #specific: fetches specific net file
 from deep_lfd.tensor.nets.net_grasp import Net_Grasp as Net 
@@ -44,13 +44,13 @@ from deep_lfd.tensor.nets.net_grasp import Net_Grasp as Net
 #Type of Translations
 
 translation = False
-rotation = False
+rotation = True
 
 #Max Number of Translations per Images
 max_trans = 50
 
 #Max Number of Rotations per Images 
-max_rot = 20
+max_rot = 50
 
 ########TRAINING PAPRAMETERS##########
 batch_size = 150
@@ -144,7 +144,7 @@ if __name__ == '__main__':
     CS = Compile_Sup(Options)
 
     outfile.close()
-    CS.compile_reg()
+    CS.compile_reg(Options.binaries_dir)
 
     data = inputdata.IMData(Options.train_file, Options.test_file) 
     net = Net(Options)

@@ -19,7 +19,7 @@ import numpy as np
 
 class  Policy():
 
-    def __init__(self, yumi,com,cam,debug = False):
+    def __init__(self, yumi,com,depthcam=None,bincam=None,debug = False):
         '''
         Initialization class for a Policy
 
@@ -38,7 +38,11 @@ class  Policy():
         self.yumi = yumi
         self.com = com
 
-        self.bc = cam
+        if(not bincam == None):
+            self.bc = bincam
+        elif(not depthcam == None):
+            self.dc = depthcam
+
         self.cp = self.com.get_cp(yumi)
         if(debug):
             debug_ar = AR_Debug(self.bc,self.com)
@@ -81,6 +85,47 @@ class  Policy():
             print str(e)
             self.yumi.set_v(1500)
             self.com.error_handler(self.yumi)
+
+
+    def rollout_ps(self):
+        '''
+        Evaluates the current policy and then executes the motion 
+        specified in the the common class
+
+
+        '''
+        
+        time.sleep(.5)
+       
+        
+        [c_im,d_im,state] = self.com.get_grasp_state(self.dc)
+        pos,rot = self.com.eval_policy(state)
+
+        posit = pos - self.cp.position 
+
+        ####HANDLE ROTATION####
+        
+        curr_angle = self.cp.euler_angles[2]
+        rotation = rot*np.pi/180.0
+   
+        rotation = -(rotation - curr_angle)
+    
+
+        rot = rotation*180.0/np.pi
+      
+        self.com.move_to_pose(self.yumi,posit,rot)
+
+        try:
+            self.com.execute_motion(self.yumi)  
+        except YuMiControlException, e:
+            print str(e)
+            self.yumi.set_v(1500)
+            self.com.error_handler(self.yumi)
+
+        self.yumi.left.open_gripper()
+        self.com.go_to_initial_state(self.yumi)
+       
+
        
 
 

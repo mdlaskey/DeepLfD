@@ -73,10 +73,10 @@ class RegPS():
             (2,) shape array that is the (x,y) pixel position
 
         """
-
+        c_points = Point(cords,frame = 'world')
         trans_inv = self.trans.inverse()
 
-        T_world = trans_inv*cords
+        T_world = trans_inv*c_points
 
         return intrs.project(T_world)
 

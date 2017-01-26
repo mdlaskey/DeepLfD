@@ -1,4 +1,4 @@
-from alan.core.options import Options #the imports may need to change on actual computer
+from deep_lfd.core.options import Options #the imports may need to change on actual computer
 import os
 from alan.rgbd.registration_wc import RegWC
 from alan.rgbd.bincam_2D import BinaryCamera 
@@ -23,8 +23,8 @@ class Grasp_Options(Options):
     ROT_MAX = 180
     ROT_MIN = 0.0
 
-    Z_MIN = 0.020
-    Z_MAX = 0.080
+    Z_MIN = 0.012
+    Z_MAX = 0.070
 
     SENSOR = 'PRIMESENSE'
 
@@ -42,7 +42,7 @@ class Grasp_Options(Options):
 
     ROT_SCALE = 100.0
 
-    T = 40
+    T = 3
 
     setup_dir = "grasp/"
 

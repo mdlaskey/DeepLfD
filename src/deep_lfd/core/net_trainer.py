@@ -16,6 +16,7 @@ import cv2
 import IPython
 import numpy as np
 
+from visualization import Visualizer2D as vis2d
 class  Net_Trainer():
 
     def __init__(self,com,net_name,c,sub,bincam = None, depthcam = None):
@@ -41,20 +42,19 @@ class  Net_Trainer():
 
         """
         self.com = com
-        self.b = bincam
-
+        
         self.c = c 
         self.sub = sub
      
-        self.bc = bincam
         self.net_name = net_name
 
-        sampleFrame = self.bc.read_frame()
+        
 
         if(not depthcam == None):
             self.dc = depthcam
         elif(not bincam == None):
             self.bc = bincam
+            sampleFrame = self.bc.read_frame()
         else: 
             raise Exception('No Camera model specified')
 
@@ -127,7 +127,7 @@ class  Net_Trainer():
         """
         self.frames = []
 
-        if(not self.bc == None):
+        if(self.com.Options.SENSOR == 'BINCAM'):
             #Clear Camera Buffer 
             for i in range(4):
                 self.bc.read_color_frame()
@@ -136,10 +136,7 @@ class  Net_Trainer():
                 frame = self.bc.read_color_frame()
                 self.frames.append(frame)
         else:
-            #Clear Camera Buffer 
-            for i in range(4):
-                self.bc.read_color_frame()
-
+          
             for i in range(self.com.Options.T):
                 color_im,d_img,thumb_img = self.com.get_grasp_state(self.dc)
                 self.frames.append([color_im,d_img,thumb_img])
@@ -176,20 +173,18 @@ class  Net_Trainer():
         """
         while True:
             update = self.c.getUpdates()
-            if(not self.bc == None)
+            if(self.com.Options.SENSOR == 'BINCAM'):
                 if(use_binary):
                     state = self.bc.read_binary_frame()
                 else:
                     state = self.bc.read_color_frame()
                 cv2.imshow('state',state )
                 cv2.waitKey(30)
-            else: 
+            elif(self.com.Options.SENSOR == 'PRIMESENSE'): 
 
                 color_im,d_img,thumb_img = self.com.get_grasp_state(self.dc)
-
-                vis2d.imshow(color_im)
-                vis2d.show()
-
+                #cv2.imshow('state',thumb_img.data )
+                #vis2d.show()
            
             if update is None:
                 break;
@@ -202,28 +197,43 @@ class  Net_Trainer():
             Function waits until Start is Pressed on the Xbox Controller and records pose
 
         """
-
-        while True:
+        terminate = False
+        while not terminate:
             update = self.c.getUpdates()
             if update is None:
                 
-                pose = self.sub.left.get_pose()
+                #clear buffer 
+                for i in range(5):
+                    pose = self.sub.left.get_pose()
                 if(pose == None):
                     raise Exception('YuMi Did Not Return a Pose')
                 pose = pose[1]
                 pose_t = pose.translation
-                break;
+
+                rotation = self.extract_angle(pose)
+                translation = pose_t[2]
+                if(self.com.check_data(rotation,translation)):
+                    terminate = True
+                else: 
+                    print "INCORRECT LABELS "
+                    print "ROTATION ",rotation
+                    print "Z AXIS ", translation
+
+                
 
 
 
         self.label = []
 
-        pixels = self.com.reg.robot_to_pixel(pose_t[0:2])
-        rotation = self.extract_angle(pose)
+        pixels = self.com.robot_to_pixel(pose_t)
+        
 
-        self.label = [pixels[0], pixels[1],rotation,pose_t[2]]
+        self.label = [pixels.x, pixels.y,rotation,pose_t[2]]
 
+        
         self.save_data(self.net_name)
+
+
 
 
 
@@ -281,9 +291,9 @@ class  Net_Trainer():
         recording = []
         for i in range(len(self.frames)):
             recording.append([self.frames[i],self.label])
-        if(not self.bc == None):
+        if(self.com.Options.SENSOR == 'BINCAM'):
             self.com.save_recording(recording,self.b)
-        else: 
+        elif(self.com.Options.SENSOR == 'PRIMESENSE'): 
             self.com.save_recording(recording)
 
    

@@ -1,7 +1,7 @@
 import cv2
-from alan.synthetic.synthetic_util import get_pixel_bounds
+from deep_lfd.synthetic.synthetic_util import get_pixel_bounds
 import numpy as np
-import cv
+
 import IPython
 from alan.core.points import Point
 from scipy import ndimage
@@ -34,17 +34,15 @@ def get_rotations_single(data, step = 20):
     img = data[0]
     label = data[1]
     rows, cols = img.shape[0], img.shape[1]
-
-    bounds = get_pixel_bounds(img)
-    center = (bounds[1] + bounds[0])/2
-
+    center = img.center
+   
     results = []
 
     for degree_shift in range(0, 360, step):
         #see for reference: http://docs.opencv.org/trunk/da/d6e/tutorial_py_geometric_transformations.html
-        M = cv2.getRotationMatrix2D((center.x, center.y), degree_shift, 1)
+        M = cv2.getRotationMatrix2D((center[0], center[1]), degree_shift, 1)
 
-        img = data.transform(np.array([0,0]),np.deg2rad(step))
+        new_img = img.transform(np.array([0,0]),np.deg2rad(step))
         #new_img = cv.GetQuadrangleSubPix(img,M,(cols, rows))
         # cv2.imshow('debug',new_img)
         # cv2.waitKey(30)
@@ -52,7 +50,8 @@ def get_rotations_single(data, step = 20):
 
         #transform the label
         new_xy = np.matmul(M, np.array([label[0], label[1], 1]))
-        new_label = np.append(new_xy, np.array([label[2] - degree_shift]))
+        new_label = np.append(new_xy, np.array([label[2] + degree_shift]))
+        new_label = np.append(new_label,np.array([label[3]]))
         results.append([new_img, new_label])
 
 
@@ -69,7 +68,7 @@ Returns:
     list with format [[matrix1, label1], ...] including original and expanded data
         expanded data has rotated image, updated label
 """
-def rotate_images(imgs,idx,bounds,deltas_i,cp,max_imgs = 20):
+def rotate_images(imgs,idx,bounds,cp,max_imgs = 20):
     #read first channel of image
     deltas = []
     rotated_imgs = []
@@ -81,10 +80,11 @@ def rotate_images(imgs,idx,bounds,deltas_i,cp,max_imgs = 20):
     num_trans_imgs = len(imgs)
 
     for i in range(num_trans_imgs):
-        label = np.zeros(3)
-        label[0] = deltas_i[i][0]
-        label[1] = deltas_i[i][1]
+        label = np.zeros(4)
+        label[0] = cp[0]
+        label[1] = cp[1]
         label[2] = cp[2]
+        label[3] = cp[3]
 
         path = imgs[i][0]
         rollout = imgs[i][1]
