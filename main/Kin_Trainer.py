@@ -17,7 +17,7 @@ from time import sleep
 from deep_lfd.core.k_trainer import Kinesthetic_Trainer
 
 #############CHANGE HERE TO TRAIN A NEW PRIMITIVE##############
-from deep_lfd.k_pi.k_cap.options import Cap_Options as Options
+from deep_lfd.k_pi.k_echo.options import Echo_Options as Options
 
 
 
@@ -27,7 +27,6 @@ if __name__ == '__main__':
     sub.start()
     opt = Options()
     controller = XboxController()
-    name = "pi_2"
-    KT = Kinesthetic_Trainer(sub,opt,name,controller)
-    KT.start_motion(True)
+    KT = Kinesthetic_Trainer(sub,opt,controller)
+    KT.start_loop(True)
 
