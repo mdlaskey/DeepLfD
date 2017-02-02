@@ -20,7 +20,7 @@ import datetime
 
 class Net_Grasp(TensorNet):
 
-    def __init__(self,options,channels=1):
+    def __init__(self, channels=3):
         self.dir = "./net6/"
         self.name = "grasp_net"
         self.channels = channels
