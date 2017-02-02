@@ -118,8 +118,8 @@ class IMData():
                 raise Exception('Image ' + path +' Not Found')
             im = im2tensor(im,self.channels)
            
-            if(labels[0] > -0.99):
-                batch.append((im, labels))  
+            
+            batch.append((im, labels))  
                 #print path            
 
             

@@ -14,7 +14,7 @@ import sys
 from time import sleep, time
 
 from core import Box, Point, RigidTransform
-from perception import DepthImage, RgbdForegroundMaskQueryImageDetector
+from perception import DepthImage, ColorImage, RgbdForegroundMaskQueryImageDetector
 
 from dexnet.planning.grasp_planner import SegmentationBasedGraspState
 from core import RigidTransform, YamlConfig

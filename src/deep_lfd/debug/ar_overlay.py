@@ -15,7 +15,7 @@ import tty, termios
 from deep_lfd.rgbd.bincam_2D import BinaryCamera 
 from deep_lfd.rgbd.registration_wc import RegWC
 from alan.control import YuMiRobot, YuMiState, YuMiControlException
-from alan.lfd_amazon.amazon_overlay import makeOverlay,generalOverlay
+#from alan.lfd_amazon.amazon_overlay import makeOverlay,generalOverlay
 import time, datetime, os, random, argparse
 import cv2
 import IPython

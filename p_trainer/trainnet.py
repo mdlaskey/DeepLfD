@@ -53,7 +53,7 @@ max_trans = 50
 max_rot = 50
 
 ########TRAINING PAPRAMETERS##########
-batch_size = 150
+batch_size = 50
 iterations = 300000
 
 ########################################################

@@ -5,15 +5,16 @@ Author: Michael Laskey
 '''
 import sys
 import tty, termios
-from alan.rgbd.bincam_2D import BinaryCamera 
-from alan.rgbd.registration_wc import RegWC
+from deep_lfd.rgbd.bincam_2D import BinaryCamera 
+from deep_lfd.rgbd.registration_wc import RegWC
 from alan.control import YuMiRobot, YuMiState, YuMiControlException
-from alan.debug.ar_overlay import AR_Debug
+from deep_lfd.debug.ar_overlay import AR_Debug
 import time, datetime, os, random, argparse
 import cv2
 import IPython
 import numpy as np
 
+from visualization import Visualizer2D as vis2d
 
 
 
@@ -99,6 +100,8 @@ class  Policy():
        
         
         [c_im,d_im,state] = self.com.get_grasp_state(self.dc)
+        vis2d.imshow(state)
+        vis2d.show()
         pos,rot = self.com.eval_policy(state)
 
         posit = pos - self.cp.position 

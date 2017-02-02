@@ -30,8 +30,8 @@ class Net_Grasp(TensorNet):
         self.y_ = tf.placeholder("float", shape=[None, 4])
 
 
-        self.w_conv1 = self.weight_variable([7, 7, self.channels, 5])
-        self.b_conv1 = self.bias_variable([5])
+        self.w_conv1 = self.weight_variable([7, 7, self.channels, 2])
+        self.b_conv1 = self.bias_variable([2])
 
         self.h_conv1 = tf.nn.relu(self.conv2d(self.x, self.w_conv1) + self.b_conv1)
 
@@ -43,7 +43,7 @@ class Net_Grasp(TensorNet):
         self.b_fc1 = self.bias_variable([fc1_num_nodes])
 
         self.h_conv_flat = tf.reshape(self.h_conv1, [-1, conv_num_nodes])
-        self.h_fc1 = tf.nn.relu(tf.matmul(self.h_conv_flat, self.w_fc1) + self.b_fc1)
+        self.y_out = tf.nn.relu(tf.matmul(self.h_conv_flat, self.w_fc1) + self.b_fc1)
 
         self.w_fc2 = self.weight_variable([fc1_num_nodes, 4])
         self.b_fc2 = self.bias_variable([4])

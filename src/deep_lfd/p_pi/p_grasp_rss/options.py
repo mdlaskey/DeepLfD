@@ -1,7 +1,6 @@
 from deep_lfd.core.options import Options #the imports may need to change on actual computer
 import os
-from alan.rgbd.registration_wc import RegWC
-from alan.rgbd.bincam_2D import BinaryCamera 
+
 import cv2
 import time
 
@@ -50,22 +49,7 @@ class Grasp_Options(Options):
 
     def __init__(self):
         
-        reg = RegWC(self)
-        l_b,u_b = reg.get_image_bounds()
-
-        self.X_LOWER_BOUND = l_b[0]
-        self.Y_LOWER_BOUND = l_b[1]
-
-        self.X_UPPER_BOUND = u_b[0]
-        self.Y_UPPER_BOUND = u_b[1]
-
-
-        self.X_MID_RANGE = (self.X_UPPER_BOUND - self.X_LOWER_BOUND)/2.0
-        self.Y_MID_RANGE = (self.Y_UPPER_BOUND - self.Y_LOWER_BOUND)/2.0
-
-        self.X_CENTER = self.X_LOWER_BOUND+self.X_MID_RANGE
-        self.Y_CENTER = self.Y_LOWER_BOUND+self.Y_MID_RANGE
-
+        
         self.setup(self.root_dir, self.setup_dir)
 
 

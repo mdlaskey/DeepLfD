@@ -230,10 +230,47 @@ class  Net_Trainer():
 
         self.label = [pixels.x, pixels.y,rotation,pose_t[2]]
 
+        if(pixels.x < 0.0 or pixels.y < 0.0):
+            print "ROBOT POSE ", pose_t
+            raise Exception('DATA NOT VALID')
+
         
         self.save_data(self.net_name)
 
 
+    def get_pose_full(self):
+        """
+            Records the (x,y,theta,z) Pose of the Current YuMi, which is used for learning 
+            Function waits until Start is Pressed on the Xbox Controller and records pose
+
+        """
+        terminate = False
+        while not terminate:
+            update = self.c.getUpdates()
+            if update is None:
+                
+                #clear buffer 
+                for i in range(5):
+                    pose = self.sub.left.get_pose()
+                if(pose == None):
+                    raise Exception('YuMi Did Not Return a Pose')
+                pose = pose[1]
+                pose_t = pose.translation
+
+                rotation = self.extract_angle(pose)
+                translation = pose_t[2]
+                if(self.com.check_data(rotation,translation)):
+                    terminate = True
+                else: 
+                    print "INCORRECT LABELS "
+                    print "ROTATION ",rotation
+                    print "Z AXIS ", translation
+
+                
+
+
+
+        return pose_t,rotation
 
 
 

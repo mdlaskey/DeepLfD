@@ -45,13 +45,16 @@ class Grasp_COM(Common):
         self.Options = Options()
 
         self.reg = RegPS()
-        self.var_path = self.Options.policies_dir+'grasp_net_01-26-2017_04h50m29s.ckpt'
+        self.var_path = self.Options.policies_dir+'grasp_net_01-31-2017_10h56m12s.ckpt'
 
         yml_file = '/home/autolab/Workspace/jeff_working/dexnet_reorg/data/experiments/grasping_gym/cfg/default_lfd.yaml'
         cfg = YamlConfig(yml_file)
         self.grasp_state = SegmentationBasedGraspState(cfg)
       
         self.constants = self.get_range()
+
+        self.netn = Net(self.Options)
+        self.sess = self.netn.load(var_path=self.var_path)
 
     @overrides(Common)
     def execute_motion(self,yumi,theta=90.0):
@@ -89,18 +92,30 @@ class Grasp_COM(Common):
 
     @overrides(Common)
     def eval_policy(self,state):
-        netn = Net(self.Options)
-        sess = netn.load(var_path=self.var_path)
-        outval = netn.output(sess, state,channels=1)
-        sess.close()
-        netn.clean_up()
+        self.depth = state
+        
+        outval = self.netn.output(self.sess, state,channels=1)
+        
 
         pos = self.rescale(outval)
         print "PREDICTED CORRECTION ", pos
         
         #convert to robot frame
-        pos_xy = self.pixel_to_robot(pos[0:2])
-        pose = np.array([pos_xy.x,pos_xy.y,pos[3]])
+        #pos_xy = self.pixel_to_robot(pos[0:2])
+        #pose = np.array([pos_xy.x,pos_xy.y,pos[3]])
+        pose = np.array([pos[0],pos[1],pos[3]])
+
+        return pose,pos[2]
+
+    @overrides(Common)
+    def eval_label(self,state):
+
+        pos = self.rescale(state)
+        print "PREDICTED CORRECTION ", pos
+        
+        #convert to robot frame
+        #pos_xy = self.pixel_to_robot(pos[0:2])
+        pose = np.array([pos[0],pos[1],pos[3]])
 
         return pose,pos[2]
 
@@ -123,7 +138,11 @@ class Grasp_COM(Common):
             The recording of the label point shoud be a list of images and labels
 
         """
-      
+        for frames,deltas in recording:
+            [c_im,d_img,thumb_img] = frames
+            if(self.check_data_size(d_img)):
+                print "DATA NOT CORRECT"
+                return
         
         name = self.next_rollout()
         path = self.Options.sup_dir + name + '/'
@@ -167,6 +186,12 @@ class Grasp_COM(Common):
         rollout_deltas_file.close()
 
         print "Done saving."
+
+    def check_data_size(self,img):
+        if(img.shape[0] == 200 and img.shape[1] == 200):
+            return True
+        else: 
+            return False
     def get_cp(self,yumi):
         self.go_to_initial_state(yumi)
         return yumi.left.get_pose()
