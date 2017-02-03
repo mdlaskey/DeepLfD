@@ -1,7 +1,3 @@
-#class for all synthetic filters (same format)
-#online learning (find file)
-#use jeff's code not opencv
-
 class Synthetic:
 
     def __init__(self, translate_options, rotate_options, reflection_options, bounds):
@@ -84,7 +80,10 @@ class Synthetic:
         return results
     def apply_filters(data):
 
-        data = self.apply_rotations(data)
+        if()
+            data = self.apply_rotations(data)
+        elif:
+            data = self.apply_translations(data)
 
 
     def check_bounds(label):
