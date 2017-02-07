@@ -10,5 +10,5 @@ setup(name='deep_lfd',
       author='Michael Laskey',
       author_email='laskeymd@berkeley.edu',
       package_dir = {'': 'src'},
-      packages=['deep_lfd', 'deep_lfd.rgbd', 'deep_lfd.control', 'deep_lfd.core', 'deep_lfd.synthetic','deep_lfd.k_pi'],
+      packages=['deep_lfd', 'deep_lfd.rgbd', 'deep_lfd.control', 'deep_lfd.core', 'deep_lfd.learning_driving', 'deep_lfd.synthetic','deep_lfd.k_pi'],
      )
