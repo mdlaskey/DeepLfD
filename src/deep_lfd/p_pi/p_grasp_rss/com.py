@@ -45,7 +45,7 @@ class Grasp_COM(Common):
         self.Options = Options()
 
         self.reg = RegPS()
-        self.var_path = self.Options.policies_dir+'grasp_net_01-31-2017_10h56m12s.ckpt'
+        # self.var_path = self.Options.policies_dir+'grasp_net_01-31-2017_10h56m12s.ckpt'
 
         yml_file = '/home/autolab/Workspace/jeff_working/dexnet_reorg/data/experiments/grasping_gym/cfg/default_lfd.yaml'
         cfg = YamlConfig(yml_file)
@@ -53,8 +53,8 @@ class Grasp_COM(Common):
       
         self.constants = self.get_range()
 
-        self.netn = Net(self.Options)
-        self.sess = self.netn.load(var_path=self.var_path)
+        # self.netn = Net(self.Options)
+        # self.sess = self.netn.load(var_path=self.var_path)
 
     @overrides(Common)
     def execute_motion(self,yumi,theta=90.0):
