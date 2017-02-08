@@ -16,6 +16,8 @@ import cv2
 import IPython
 import numpy as np
 
+import robot_logger as audio_logger
+
 from visualization import Visualizer2D as vis2d
 class  Net_Trainer():
 
@@ -246,8 +248,8 @@ class  Net_Trainer():
         """
         terminate = False
         while not terminate:
-            update = self.c.getUpdates()
-            if update is None:
+            update = self.detect_echo_record()
+            if update:
                 
                 #clear buffer 
                 for i in range(5):
@@ -289,8 +291,8 @@ class  Net_Trainer():
         """
 
         while True:
-            update = self.c.getUpdates()
-            if update == None:
+            update = self.detect_echo_record()
+            if update:
 
                 if(arm == 'LEFT'):
                     pose = self.sub.left.get_pose()
@@ -332,6 +334,16 @@ class  Net_Trainer():
             self.com.save_recording(recording,self.b)
         elif(self.com.Options.SENSOR == 'PRIMESENSE'): 
             self.com.save_recording(recording)
+
+
+    def detect_echo_record(self):
+        """
+        Detect whether the Echo was told to record
+        """
+        command = audio_logger.getDataCommand()
+        if command is not None:
+            return True
+        return False
 
    
 
