@@ -173,8 +173,10 @@ class  Net_Trainer():
                 If set to true will display a binary mask, while false displays the color image
 
         """
+        print "Ready for commands"
         while True:
-            update = self.c.getUpdates()
+            # update = self.c.getUpdates()
+            update = self.detect_echo_record()
             if(self.com.Options.SENSOR == 'BINCAM'):
                 if(use_binary):
                     state = self.bc.read_binary_frame()
@@ -188,7 +190,8 @@ class  Net_Trainer():
                 #cv2.imshow('state',thumb_img.data )
                 #vis2d.show()
            
-            if update is None:
+           # if update == None:
+            if update:
                 break;
 
 
@@ -200,9 +203,12 @@ class  Net_Trainer():
 
         """
         terminate = False
+        print "Now you can move the arm"
         while not terminate:
-            update = self.c.getUpdates()
-            if update is None:
+            # update = self.c.getUpdates()
+            # if update == None:
+            update = self.detect_echo_record()
+            if update:
                 
                 #clear buffer 
                 for i in range(5):
@@ -248,6 +254,8 @@ class  Net_Trainer():
         """
         terminate = False
         while not terminate:
+            # update = self.c.getUpdates()
+            # if update == None:
             update = self.detect_echo_record()
             if update:
                 
@@ -289,8 +297,9 @@ class  Net_Trainer():
                 Specifies which arm to train with (LEFT or RIGHT)
 
         """
-
         while True:
+            # update = self.c.getUpdates()
+            # if update == None:
             update = self.detect_echo_record()
             if update:
 
@@ -340,9 +349,13 @@ class  Net_Trainer():
         """
         Detect whether the Echo was told to record
         """
+        # self.c.getUpdates() # call the xbox controller for print statements, but don't use it
+        # print "Querying Echo"
         command = audio_logger.getDataCommand()
         if command is not None:
+            print "The Echo heard a Record! Wait for the next line..."
             return True
+        # print "Not recording"
         return False
 
    
