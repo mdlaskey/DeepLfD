@@ -11,7 +11,7 @@ import numpy as np
 from time import sleep, time
 from core import YamlConfig
 from perception import OpenCVCameraSensor
-from yumipy import YuMiSubscriber, YuMiRobot, YuMiGripper
+from yumipy import YuMiSubscriber, YuMiRobot
 from yumi_teleop import DemoWrapper, TeleopExperimentLogger, QueueEventsSub
 from core import DataStreamSyncer, DataStreamRecorder
 from deep_lfd.control import XboxController
