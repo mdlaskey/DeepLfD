@@ -1,0 +1,6 @@
+rollout81_frame_0.npy 108 102 99.5639464 0.0181 
+rollout81_frame_1.npy 108 102 99.5639464 0.0181 
+rollout81_frame_2.npy 108 102 99.5639464 0.0181 
+rollout81_frame_3.npy 108.0 102.0 99.5639464 0.0181 
+rollout81_frame_4.npy 108.0 102.0 99.5639464 0.0181 
+rollout81_frame_5.npy 108.0 102.0 99.5639464 0.0181 

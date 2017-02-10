@@ -1,8 +1,8 @@
 ''''
     Used to train a nerual network that maps an image to robot pose (x,y,z)
-    Supports the Option of Synthetically Growing the data for Rotation and Translation 
+    Supports the Option of Synthetically Growing the data for Rotation and Translation
 
-    Author: Michael Laskey 
+    Author: Michael Laskey
 
 
     Flags
@@ -16,7 +16,7 @@
     --net_name (-n) : string
         The name of the network if their exists multiple nets for the task (not required)
 
-    --demonstrator (-d) : string 
+    --demonstrator (-d) : string
         The name of the person who trained the network (not required)
 
 '''
@@ -26,31 +26,19 @@ import sys, os
 
 import IPython
 from deep_lfd.tensor import inputdata
-from compile_sup import Compile_Sup 
+from compile_sup import Compile_Sup
 import numpy as np, argparse
 from deep_lfd.synthetic.affine_synthetic import Affine_Synthetic
 from plotter import plot_net
 
 #######NETWORK FILES TO BE CHANGED#####################
 #specific: imports options from specific options file
-from deep_lfd.p_pi.p_grasp_rss.options import Grasp_Options as options 
+from deep_lfd.p_pi.p_grasp_rss.options import Grasp_Options as options
 
 #specific: fetches specific net file
-from deep_lfd.tensor.nets.net_grasp import Net_Grasp as Net 
+from deep_lfd.tensor.nets.net_grasp import Net_Grasp as Net
 ########################################################
 
-#########SYNTHETIC PARAMS##########
-
-#Type of Translations
-
-translation = False
-rotation = True
-
-#Max Number of Translations per Images
-max_trans = 50
-
-#Max Number of Rotations per Images 
-max_rot = 50
 
 ########TRAINING PAPRAMETERS##########
 batch_size = 50
@@ -118,11 +106,6 @@ if __name__ == '__main__':
         root_dir = '/home/autolab/Workspace/michael_working/alan/AHRI'+demonstrator
         Options.setup(root_dir, net_name,folder='net')
 
-    if(translation or rotation):
-        aff_syn = Affine_Synthetic(Options,translation,rotation,max_trans,max_rot)
-        aff_syn.generate_data(first,last)
-
-
     outfile = open(Options.deltas_file, 'w+') #specific: fetches specific directory. CHANGE
     f = []
     for (dirpath, dirnames, filenames) in os.walk(Options.sup_dir): #specific: sup_dir from specific options
@@ -146,7 +129,7 @@ if __name__ == '__main__':
     outfile.close()
     CS.compile_reg(Options.binaries_dir)
 
-    data = inputdata.IMData(Options.train_file, Options.test_file) 
+    data = inputdata.IMData(Options.train_file, Options.test_file)
     net = Net(Options)
     net.optimize(iterations,data, batch_size=batch_size, test_print = 10)
 

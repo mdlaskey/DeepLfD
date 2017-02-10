@@ -1,0 +1,3 @@
+rollout54_frame_0.npy 92 98 175.079762364 0.0642 
+rollout54_frame_1.npy 92 98 175.079762364 0.0642 
+rollout54_frame_2.npy 92 98 175.079762364 0.0642 

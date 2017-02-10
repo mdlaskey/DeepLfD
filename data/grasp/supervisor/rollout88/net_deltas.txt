@@ -1,0 +1,6 @@
+rollout88_frame_0.npy 88 92 39.257009556 0.0168 
+rollout88_frame_1.npy 88 92 39.257009556 0.0168 
+rollout88_frame_2.npy 88 92 39.257009556 0.0168 
+rollout88_frame_3.npy 88.0 92.0 39.257009556 0.0168 
+rollout88_frame_4.npy 88.0 92.0 39.257009556 0.0168 
+rollout88_frame_5.npy 88.0 92.0 39.257009556 0.0168 

@@ -1,0 +1,6 @@
+rollout37_frame_0.npy 90 97 166.75486744 0.0275 
+rollout37_frame_1.npy 90 97 166.75486744 0.0275 
+rollout37_frame_2.npy 90 97 166.75486744 0.0275 
+rollout37_frame_3.npy 90.0 97.0 166.75486744 0.0275 
+rollout37_frame_4.npy 90.0 97.0 166.75486744 0.0275 
+rollout37_frame_5.npy 90.0 97.0 166.75486744 0.0275 

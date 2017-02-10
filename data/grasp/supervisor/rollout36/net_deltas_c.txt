@@ -1,0 +1,3 @@
+rollout36_frame_0.npy 88 88 156.14600769 0.025 
+rollout36_frame_1.npy 88 88 156.14600769 0.025 
+rollout36_frame_2.npy 88 88 156.14600769 0.025 

@@ -1,3 +1,5 @@
+"""moved to synthetic.py"""
+
 import cv2
 from deep_lfd.synthetic.synthetic_util import get_pixel_bounds
 import numpy as np
@@ -37,7 +39,7 @@ def get_rotations_single(data, step = 5):
     center = img.center
 
     degrees = np.linspace(-90.0,90.0,num = 15)
-   
+
     results = []
     degrees = [0.0]
     for degree_shift in degrees:

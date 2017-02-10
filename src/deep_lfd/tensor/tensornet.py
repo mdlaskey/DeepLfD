@@ -22,6 +22,7 @@ import tensorflow as tf
 import time
 import datetime
 from deep_lfd.tensor.inputdata import im2tensor
+import deep_lfd.synthetic.synthetic
 import deep_lfd.tensor.inputdata
 import logging
 import IPython
@@ -83,7 +84,7 @@ class TensorNet():
         return sess
 
 
-    def optimize(self, iterations, data, unbiased=False, path=None, batch_size=100, test_print=10, save=True):
+    def optimize(self, iterations, data, unbiased=False, path=None, batch_size=100, test_print=10, save=True, synthetic = True):
         """
             optimize net for [iterations]. path is either absolute or
             relative to current working directory. data is InputData object (see class for details)
@@ -105,12 +106,17 @@ class TensorNet():
                     batch = data.next_train_batch(batch_size)
                     ims, labels = batch
 
+                    if synthetic:
+                        data = zip(ims, labels)
+                        data = apply_filters(data, rotate = True, translate = True, reflect = True)
+                        
+                    ims, labels = zip(*data)
 
 
                     feed_dict = { self.x: ims, self.y_: labels }
 
 
-                    if i % 10 == 0:
+                    if i % test_print == 0:
 
                         batch_loss = self.loss.eval(feed_dict=feed_dict)
 

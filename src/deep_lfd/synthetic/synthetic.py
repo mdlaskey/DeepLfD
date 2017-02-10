@@ -1,17 +1,41 @@
+import cv2
+import IPython
+import numpy as np
+from scipy import ndimage
+
 class Synthetic:
 
-    def __init__(self, translate_options, rotate_options, reflection_options, bounds):
+    def __init__(self, bounds):
 
-        self.translate_step = translate_options[0]
-        self.max_num_translations = translate_options[1]
+        self.bounds = bounds
 
-        self.rotate_range = rotate_options[0] % 180
-        self.rotate_step = rotate_options[1]
-        self.max_num_rotations = rotate_options[2]
-
-    def apply_rotations(data):
+    def get_dist_from_bounds(image):
         """
-        input/output data are lists of format (image, label)
+        Parameters
+        ----------
+        binary image
+
+        Returns
+        -------
+        distance from object bounding box to image bounds in order of low_x, high_x, low_y, high_y
+        """
+        pixel_points = cv2.findNonZero(image)
+        x, y, w, h = cv2.boundingRect(image)
+        hx = len(matrix.T) - (x + w)
+        hy = len(matrix) - (y + h)
+
+        return x, hx, y, hy
+
+    def apply_rotations(data, num):
+        """
+        Parameters
+        ----------
+        data : list of format (image, label)
+        num : number of transformations to apply to each image in data
+
+        Returns
+        -------
+        input data rotated by randomly selected amounts
         """
 
         results = np.array([])
@@ -20,28 +44,35 @@ class Synthetic:
 
             curr = np.array([(img, label)])
 
-            for degree_shift in np.linspace(-self.rotate_range, self.rotate_range, num = self.rotate_step):
+            sample_num = 0
+            while sample_num < num:
+                degree_shift = np.random.uniform(-180, 180)
+
                 new_img = img.transform(np.array([0,0]),np.deg2rad(degree_shift))
 
                 M = cv2.getRotationMatrix2D((img.center[0], img.center[1]), degree_shift, 1)
                 new_xy = np.matmul(M, np.array([label[0], label[1], 1]))
                 new_theta = np.array([label[2] - degree_shift])
-                new_depth = np.array(label[3])
-                new_label = np.append(new_xy, new_theta, new_depth)
+                new_label = np.append(new_xy, new_theta, np.array([label[3]]))
 
                 if check_bounds(new_label):
                     curr = np.append(curr, (new_img, new_label)))
-
-                if len(curr) >= self.max_num_rotations:
-                    break
+                    sample_num += 1
 
             results = np.append(results, curr)
 
         return results
 
-    def apply_translations(data):
+    def apply_translations(data, num):
         """
-        input/output data are lists of format (image, label)
+        Parameters
+        ----------
+        data : list of format (image, label)
+        num : number of transformations to apply to each image in data
+
+        Returns
+        -------
+        input data translated by randomly selected amounts in x and y
         """
 
         results = np.array([])
@@ -50,43 +81,88 @@ class Synthetic:
 
             curr = np.array([img, label])
 
-            for x in range(lo, hi):
-                for y in range(lo, hi):
+            sample_num = 0
+            while sample_num < num:
+                lx, hx, ly, hy = get_dist_from_bounds(matrix)
 
-                    if check_bounds(new_label):
-                        curr = np.append(curr, (new_img, new_label)))
+                x_shift = np.random.uniform(-lx, hx)
+                y_shift = np.random.uniform(-ly, hy)
+                new_img = img.transform(np.array([x_shift,y_shift]), 0)
 
-                    if len(curr) >= self.max_num_translations:
-                        break
+                M = cv2.getRotationMatrix2D((img.center[0], img.center[1]), degree_shift, 1)
+                new_xy = np.array([label[0] + x_shift, label[1] + y_shift])
+                new_label = np.append(new_xy, np.array([label[2], label[3]]))
+
+                if check_bounds(new_label):
+                    curr = np.append(curr, (new_img, new_label)))
+                    sample_num += 1
 
             results = np.append(results, curr)
 
         return results
 
-    def apply_reflections(data):
+    def apply_reflection(data):
         """
-        input/output data are lists of format (image, label)
+        Parameters
+        ----------
+        data : list of format (image, label)
+
+        Returns
+        -------
+        input data reflected across y-axis
         """
 
         results = np.array([])
 
         for img, label in data:
-            new_img = cv2.flip(img, 1)
-            new_label = [len(new_img[0]) - label[0], label[1], label[2], label[3]]
 
-            if check_bounds(new_label):
-                results = np.append(results, (new_img, new_label))
+            sample_num = 0
+            while sample_num < 1:
+                new_img = cv2.flip(img, 1)
+                new_x = np.array([len(img.T) - label[0]])
+                new_label = np.append(new_x, np.array([label[1], label[2], label[3]]))
+
+                if check_bounds(new_label):
+                    results = np.append(results, (new_img, new_label))
+                    sample_num += 1
 
         return results
-    def apply_filters(data):
 
-        if()
-            data = self.apply_rotations(data)
-        elif:
-            data = self.apply_translations(data)
+    def apply_filters(data, rotate = False, translate = False, reflect = False):
+        """
+        Parameters
+        ----------
+        data : list of format (image, label)
+        rotate, translate, reflect : bools specifying types of transformation to aply
+
+        Returns
+        -------
+        input data transformed (does not compose transformations)
+        """
+
+        output_data = np.copy(data)
+
+        if rotate:
+            output_data = np.append(output_data, apply_rotations(data, 20))
+        if translate:
+            output_data = np.append(output_data, apply_translations(data, 20))
+        if reflect:
+            output_data = np.append(output_data, apply_reflection(data))
+
+        return output_data
 
 
     def check_bounds(label):
+        """
+        Parameters
+        ----------
+        label : (x, y, theta, depth)
+
+        Returns
+        -------
+        True if label falls within workspace bounds
+        """
+
         b_l = self.bounds[0]
         b_u = self.bounds[1]
         b_r = self.bounds[2]

@@ -1,0 +1,3 @@
+rollout210_frame_0.npy 90 103 89.35176426 0.0556 
+rollout210_frame_1.npy 90 103 89.35176426 0.0556 
+rollout210_frame_2.npy 90 103 89.35176426 0.0556 

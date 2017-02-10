@@ -1,0 +1,3 @@
+rollout16_frame_0.npy 86 75 97.5460050302 0.0404 
+rollout16_frame_1.npy 86 75 97.5460050302 0.0404 
+rollout16_frame_2.npy 86 75 97.5460050302 0.0404 
