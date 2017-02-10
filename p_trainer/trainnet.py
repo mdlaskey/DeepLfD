@@ -24,11 +24,16 @@
 
 import sys, os
 
+#quick fix- no permission to change paths
+sys.path.insert(0, "/home/annal/DeepLfD/src")
+sys.path.insert(0, "home/annal/perception")
+import perception.image
+
 import IPython
 from deep_lfd.tensor import inputdata
 from compile_sup import Compile_Sup
 import numpy as np, argparse
-from deep_lfd.synthetic.affine_synthetic import Affine_Synthetic
+from deep_lfd.synthetic.synthetic import Synthetic
 from plotter import plot_net
 
 #######NETWORK FILES TO BE CHANGED#####################

@@ -3,13 +3,13 @@ import matplotlib.patches as mpatches
 
 def plot_net(training, test, filter_name, save_dir, plot_num, step_size = 10):
 	''''
-	Saves plot training and test loss vs. iterations
+	Saves plot of training and validations error vs. iterations
 	Parameters
 	----------
 	training : list
 		training error at each iteration 
 	test : list
-		test error at each iteration 
+		validation error at each iteration 
 	filter_name : string
 		grayscale, rgb, etc.
 	save_dir : path 
@@ -25,7 +25,7 @@ def plot_net(training, test, filter_name, save_dir, plot_num, step_size = 10):
 	plt.title(filter_name)
 
 	plt.plot(iterations, training, 'b', label = 'Training')
-	plt.plot(iterations, test, 'g', label = 'Test')
+	plt.plot(iterations, test, 'g', label = 'Validation')
 	
 	plt.xlabel('Iterations')
 	plt.ylabel('Error')

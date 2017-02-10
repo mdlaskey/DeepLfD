@@ -2,31 +2,41 @@ import cv2
 import IPython
 import numpy as np
 from scipy import ndimage
+import perception.image
 
 class Synthetic:
 
-    def __init__(self, bounds):
+    def __init__(self, Options, num_samples):
+        """
+        Parameters
+        ----------
+        Options : options file containing workspace pixel bounds
+        num : number of transformations to apply to each image in data
 
-        self.bounds = bounds
+        """
+
+        self.bounds = Options.bounds
+        self.num = num_samples
 
     def get_dist_from_bounds(image):
         """
         Parameters
         ----------
-        binary image
+        image : binary image
 
         Returns
         -------
         distance from object bounding box to image bounds in order of low_x, high_x, low_y, high_y
         """
-        pixel_points = cv2.findNonZero(image)
-        x, y, w, h = cv2.boundingRect(image)
-        hx = len(matrix.T) - (x + w)
-        hy = len(matrix) - (y + h)
+        pixel_points = image.nonzero_pixels()
+        lx = min(pixel_points, key = lambda x: x[0])
+        hx = len(image.T) - max(pixel_points, key = lambda x: x[0])
+        ly = min(pixel_points, key = lambda x: x[1])
+        hy = len(image.T) - max(pixel_points, key = lambda x: x[1])
 
-        return x, hx, y, hy
+        return lx, hx, ly, hy
 
-    def apply_rotations(data, num):
+    def apply_rotations(data):
         """
         Parameters
         ----------
@@ -45,12 +55,13 @@ class Synthetic:
             curr = np.array([(img, label)])
 
             sample_num = 0
-            while sample_num < num:
-                degree_shift = np.random.uniform(-180, 180)
+            while sample_num < self.num:
+                degree_shift = np.random.uniform(-90, 90)
 
                 new_img = img.transform(np.array([0,0]),np.deg2rad(degree_shift))
 
-                M = cv2.getRotationMatrix2D((img.center[0], img.center[1]), degree_shift, 1)
+                c = img.center 
+                M = cv2.getRotationMatrix2D((c[0], c[1]), degree_shift, 1)
                 new_xy = np.matmul(M, np.array([label[0], label[1], 1]))
                 new_theta = np.array([label[2] - degree_shift])
                 new_label = np.append(new_xy, new_theta, np.array([label[3]]))
@@ -63,12 +74,11 @@ class Synthetic:
 
         return results
 
-    def apply_translations(data, num):
+    def apply_translations(data):
         """
         Parameters
         ----------
         data : list of format (image, label)
-        num : number of transformations to apply to each image in data
 
         Returns
         -------
@@ -82,14 +92,14 @@ class Synthetic:
             curr = np.array([img, label])
 
             sample_num = 0
-            while sample_num < num:
+            while sample_num < self.num:
                 lx, hx, ly, hy = get_dist_from_bounds(matrix)
 
                 x_shift = np.random.uniform(-lx, hx)
                 y_shift = np.random.uniform(-ly, hy)
                 new_img = img.transform(np.array([x_shift,y_shift]), 0)
 
-                M = cv2.getRotationMatrix2D((img.center[0], img.center[1]), degree_shift, 1)
+                M = cv2.getRotationMatrix2D((img.center[0], img.center[1]), 0, 1)
                 new_xy = np.array([label[0] + x_shift, label[1] + y_shift])
                 new_label = np.append(new_xy, np.array([label[2], label[3]]))
 
@@ -116,15 +126,13 @@ class Synthetic:
 
         for img, label in data:
 
-            sample_num = 0
-            while sample_num < 1:
-                new_img = cv2.flip(img, 1)
-                new_x = np.array([len(img.T) - label[0]])
-                new_label = np.append(new_x, np.array([label[1], label[2], label[3]]))
+            new_img = cv2.flip(img, 1)
+            new_x = np.array([len(img.T) - label[0]])
+            new_theta = np.array([180 - label[2]])
+            new_label = np.append(new_x, np.array([label[1]) new_theta, np.array(label[3]]))
 
-                if check_bounds(new_label):
-                    results = np.append(results, (new_img, new_label))
-                    sample_num += 1
+            if check_bounds(new_label):
+                results = np.append(results, (new_img, new_label))
 
         return results
 
