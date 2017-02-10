@@ -33,7 +33,7 @@ from plotter import plot_net
 #specific: imports options from specific options file
 from deep_lfd.p_pi.p_grasp.options import Grasp_Options as options 
 #specific: fetches specific net file
-from deep_lfd.tensor.net_grasp import Net_Grasp as Net 
+from deep_lfd.tensor.net_grasp_v2 import Net_Grasp as Net 
 
 
 #########SYNTHETIC PARAMS##########
@@ -51,7 +51,8 @@ max_rot = 20
 
 ########TRAINING PAPRAMETERS##########
 batch_size = 150
-iterations = 500
+iterations = 600
+plot_dir = "plots_v2"
 
 ########################################################
 
@@ -140,76 +141,109 @@ if __name__ == '__main__':
 
     Options.set_filter_paths()
 
-    #Try Different Filters 
-    #Binaries Filter 
-    CS.compile_reg(Options.binary_dir)
 
-    data = inputdata.IMData(Options.train_file, Options.test_file) 
-    net = Net(Options)  
-    net.optimize(iterations,data, batch_size=batch_size)
-    train_log, test_log = net.get_logs()
-    plot_net(train_log, test_log, "Binary", Options.setup_dir + "/plots", 0)
+    all_tests = []
+    # all_tests.append([Options.binary_dir, "Binary"])
+    all_tests.append([Options.originals_dir, "Color"])
+    # all_tests.append([Options.gray_dir, "Gray"])
+    # all_tests.append([Options.gray_mask_dir, "Gray Mask"])
+    # all_tests.append([Options.gray_mask_binned_dir, "Gray Mask Binned"])
+    # all_tests.append([Options.rgb_gray_dir, "RGB Gray"])
+    # all_tests.append([Options.rgb_mask_dir, "RGB Mask"])
+    # all_tests.append([Options.rgb_mask_binned_dir, "RGB Mask Binned"])
 
-    #Gray 
-    CS.compile_reg(Options.gray_dir)
+    nodes = 500
+    windows = 5
 
-    data = inputdata.IMData(Options.train_file, Options.test_file) 
-    net = Net(Options)  
-    net.optimize(iterations,data, batch_size=batch_size)
-    train_log, test_log = net.get_logs()
-    plot_net(train_log, test_log, "Gray", Options.setup_dir + "/plots", 1)
+
+    plot_num = 0
+    for test in all_tests:
+        curr_options = test[0]
+        curr_save = test[1]
+
+        CS.compile_reg(curr_options)
+       
+        data = inputdata.IMData(Options.train_file, Options.test_file) 
+        net = Net(Options, nodes, windows)  
+        net.optimize(iterations,data, batch_size=batch_size)
+
+        train_log, test_log = net.get_logs()
+        curr_name = curr_save + "_" + str(nodes) + "_" + str(windows)
+
+        plot_net(train_log, test_log, curr_name, Options.setup_dir + plot_dir, plot_num)
+        plot_num += 1
+
+
+    # Try Different Filters 
+    # Binaries Filter 
+    # CS.compile_reg(Options.binary_dir)
+
+    # data = inputdata.IMData(Options.train_file, Options.test_file) 
+    # net = Net(Options)  
+    # net.optimize(iterations,data, batch_size=batch_size)
+    # train_log, test_log = net.get_logs()
+    # plot_net(train_log, test_log, "Binary", Options.setup_dir + plot_dir, 0)
+
+    # #Gray 
+    # CS.compile_reg(Options.gray_dir)
+
+    # data = inputdata.IMData(Options.train_file, Options.test_file) 
+    # net = Net(Options)  
+    # net.optimize(iterations,data, batch_size=batch_size)
+    # train_log, test_log = net.get_logs()
+    # plot_net(train_log, test_log, "Gray", Options.setup_dir + plot_dir, 1)
 
     #Color
-    CS.compile_reg(Options.originals_dir)
+    # CS.compile_reg(Options.originals_dir)
 
-    data = inputdata.IMData(Options.train_file, Options.test_file) 
-    net = Net(Options)  
-    net.optimize(iterations,data, batch_size=batch_size)
-    train_log, test_log = net.get_logs()
-    plot_net(train_log, test_log, "Color", Options.setup_dir + "/plots", 2)
+    # data = inputdata.IMData(Options.train_file, Options.test_file) 
+    # net = Net(Options)  
+    # net.optimize(iterations,data, batch_size=batch_size)
+    # train_log, test_log = net.get_logs()
+    # plot_net(train_log, test_log, "Color", Options.setup_dir + plot_dir, 2)
 
-    #Gray Mask
-    CS.compile_reg(Options.gray_mask_dir)
+    # #Gray Mask
+    # CS.compile_reg(Options.gray_mask_dir)
 
-    data = inputdata.IMData(Options.train_file, Options.test_file) 
-    net = Net(Options)  
-    net.optimize(iterations,data, batch_size=batch_size)
-    train_log, test_log = net.get_logs()
-    plot_net(train_log, test_log, "Gray Mask", Options.setup_dir + "/plots", 3)
+    # data = inputdata.IMData(Options.train_file, Options.test_file) 
+    # net = Net(Options)  
+    # net.optimize(iterations,data, batch_size=batch_size)
+    # train_log, test_log = net.get_logs()
+    # plot_net(train_log, test_log, "Gray Mask", Options.setup_dir + plot_dir, 3)
 
-    #Gray Mask Binned
-    CS.compile_reg(Options.gray_mask_binned_dir)
+    # #Gray Mask Binned
+    # CS.compile_reg(Options.gray_mask_binned_dir)
 
-    data = inputdata.IMData(Options.train_file, Options.test_file) 
-    net = Net(Options)  
-    net.optimize(iterations,data, batch_size=batch_size)
-    train_log, test_log = net.get_logs()
-    plot_net(train_log, test_log, "Gray Mask Binned", Options.setup_dir + "/plots", 4)
+    # data = inputdata.IMData(Options.train_file, Options.test_file) 
+    # net = Net(Options)  
+    # net.optimize(iterations,data, batch_size=batch_size)
+    # train_log, test_log = net.get_logs()
+    # plot_net(train_log, test_log, "Gray Mask Binned", Options.setup_dir + plot_dir, 4)
 
-    #RGB gray
-    CS.compile_reg(Options.rgb_gray_dir)
+    # #RGB gray
+    # CS.compile_reg(Options.rgb_gray_dir)
 
-    data = inputdata.IMData(Options.train_file, Options.test_file) 
-    net = Net(Options, channels = 3)  
-    net.optimize(iterations,data, batch_size=batch_size)
-    train_log, test_log = net.get_logs()
-    plot_net(train_log, test_log, "RGB Gray", Options.setup_dir + "/plots", 5)
+    # data = inputdata.IMData(Options.train_file, Options.test_file) 
+    # net = Net(Options)  
+    # net.optimize(iterations,data, batch_size=batch_size)
+    # train_log, test_log = net.get_logs()
+    # plot_net(train_log, test_log, "RGB Gray", Options.setup_dir + plot_dir, 5)
 
-    #RGB Mask 
-    CS.compile_reg(Options.rgb_mask)
+    # #RGB Mask 
+    # CS.compile_reg(Options.rgb_mask_dir)
 
-    data = inputdata.IMData(Options.train_file, Options.test_file) 
-    net = Net(Options, channels = 3)  
-    net.optimize(iterations,data, batch_size=batch_size)
-    train_log, test_log = net.get_logs()
-    plot_net(train_log, test_log, "RGB Mask", Options.setup_dir + "/plots", 6)
+    # data = inputdata.IMData(Options.train_file, Options.test_file) 
+    # net = Net(Options)  
+    # net.optimize(iterations,data, batch_size=batch_size)
+    # train_log, test_log = net.get_logs()
+    # plot_net(train_log, test_log, "RGB Mask", Options.setup_dir + plot_dir, 6)
 
-    #RGB Mask binned
-    CS.compile_reg(Options.rgb_mask_binned)
+    # #RGB Mask binned
+    # CS.compile_reg(Options.rgb_mask_binned_dir)
 
-    data = inputdata.IMData(Options.train_file, Options.test_file) 
-    net = Net(Options, channels = 3)  
-    net.optimize(iterations,data, batch_size=batch_size)
-    train_log, test_log = net.get_logs()
-    plot_net(train_log, test_log, "RGB Mask Binned", Options.setup_dir + "/plots", 7)
+    # data = inputdata.IMData(Options.train_file, Options.test_file) 
+    # net = Net(Options)  
+    # net.optimize(iterations,data, batch_size=batch_size)
+    # train_log, test_log = net.get_logs()
+    # plot_net(train_log, test_log, "RGB Mask Binned", Options.setup_dir + plot_dir, 7)
 

@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt 
 import matplotlib.patches as mpatches
 
-def plot_net(training, test, filter_name, save_dir, plot_num):
+def plot_net(training, test, filter_name, save_dir, plot_num, step_size = 10):
 	''''
 	Saves plot training and test loss vs. iterations
 	Parameters
@@ -18,7 +18,7 @@ def plot_net(training, test, filter_name, save_dir, plot_num):
 		number of plot
 	'''
 
-	iterations = [i for i in range(len(training))]
+	iterations = [step_size * i for i in range(len(training))]
 	
 	plt.figure(plot_num)
 	plt.title(filter_name)
