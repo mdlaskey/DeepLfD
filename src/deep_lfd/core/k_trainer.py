@@ -8,7 +8,7 @@ Author : Michael Laskey
 import os, logging
 import IPython
 import numpy as np
-from time import sleep
+from time import sleep, time
 from core import YamlConfig
 from perception import OpenCVCameraSensor
 from yumipy import YuMiSubscriber, YuMiRobot
@@ -134,7 +134,7 @@ class Kinesthetic_Trainer:
             self.webcam.stop()
         except Exception:
             pass
-        logging.info("Done!")
+        logging.info("Stopped syncer and ysub!")
 
     def start_motion(self, collect_timing=False):
         '''
@@ -150,25 +150,39 @@ class Kinesthetic_Trainer:
 
         self.syncer.resume(reset_time=True)
         last_controls = self.controller.getUpdates()
+        start_time = time()
         while True:
             controls = self.controller.getUpdates()
             if controls == None: # stopping recording
+                demo_time = time() - start_time
                 logging.info("Data Collection stopped!")
                 self.syncer.pause()
+
+                while True:
+                    s = raw_input("Was the demo a success? [y/n] ")
+                    if s in ('y', 'n'):
+                        break
+                    else:
+                        print "Please only input 'y' or 'n'!\n"
+
+                s = True if s == 'y' else False
+
                 self.logger.save_demo_data(self.demo_name,
+                                            demo_time,
+                                            s,
                                            self.cfg['supervisor'],
                                            self.save_file_paths,
                                            self.all_datas,
                                            self.cfg['fps'])
                 self._stop()
                 _ = raw_input("Please start server so takedown motions can be performed. Click [ENTER] to confirm.\n")
-                sleep(3)
+                logging.info("Performing takedown motions...")
+                sleep(4)
                 self.yumi = YuMiRobot()
                 self.yumi.set_v(self.cfg['v'])
                 self.yumi.set_z(self.cfg['z'])
 
                 demo_obj = DemoWrapper.load(self.demo_filename, self.yumi)
-                logging.info("Performing takedown motions...")
                 demo_obj.takedown()
                 self.yumi.reset_home()
                 self.yumi.open_grippers()
@@ -178,12 +192,12 @@ class Kinesthetic_Trainer:
             button_downs = np.logical_and(np.logical_xor(last_controls, controls), controls)
             if True in button_downs[2:]: # log gripper event
                 if controls[2]:
-                    self.grippers_bool['left'].put_event('close_gripper')
+                    self.grippers_bool['left'].put_event(('close_gripper',))
                 elif controls[3]:
-                    self.grippers_bool['left'].put_event('open_gripper')
+                    self.grippers_bool['left'].put_event(('open_gripper',))
                 elif controls[4]:
-                    self.grippers_bool['right'].put_event('close_gripper')
+                    self.grippers_bool['right'].put_event(('close_gripper',))
                 elif controls[5]:
-                    self.grippers_bool['right'].put_event('open_gripper')
+                    self.grippers_bool['right'].put_event(('open_gripper',))
 
             last_controls = controls
