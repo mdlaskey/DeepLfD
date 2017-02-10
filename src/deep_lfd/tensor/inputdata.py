@@ -14,6 +14,8 @@ import cv2
 import IPython
 import sys
 
+from perception import DepthImage
+
 
 def process_out(n):
     '''
@@ -55,8 +57,9 @@ def im2tensor(im,channels=1):
     h, w = shape[0], shape[1]
     zeros = np.zeros((h, w, channels))
     for i in range(channels):
-        zeros[:,:,i] = im[:,:,i]/255.0
+        zeros[:,:,i] = im[:,:,i]
     return zeros
+
 
 
 def parse(filepath, stop=-1):
@@ -108,11 +111,18 @@ class IMData():
         batch_tups = self.train_tups[self.i:n+self.i]
         batch = []
         for path, labels in batch_tups:
-            im = cv2.imread(path)
+            im = DepthImage.open(path)
+           
+            
             if(im == None):
                 raise Exception('Image ' + path +' Not Found')
             im = im2tensor(im,self.channels)
-            batch.append((im, labels))
+           
+            
+            batch.append((im, labels))  
+                #print path            
+
+            
         batch = zip(*batch)
         self.i = self.i + n
         return list(batch[0]), list(batch[1])
@@ -125,11 +135,17 @@ class IMData():
         """
         batch = []
         for path, labels in self.test_tups[:200]:
-            im = cv2.imread(path,self.channels)
+            im = DepthImage.open(path)
+            
             if(im == None):
                 raise Exception('Image ' + path +' Not Found')
             im = im2tensor(im,self.channels)
-            batch.append((im, labels))
+           
+            if(labels[0] > -0.99):
+                batch.append((im, labels))  
+                #print path          
+
+  
         random.shuffle(self.test_tups)
         batch = zip(*batch)
         return list(batch[0]), list(batch[1])

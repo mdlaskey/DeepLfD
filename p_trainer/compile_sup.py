@@ -28,7 +28,24 @@ class Compile_Sup:
         x_center = low_bound[0] + x_mid_range
         y_center = low_bound[1] + y_mid_range
 
-       
+
+        return [x_mid_range,y_mid_range,x_center,y_center]
+
+
+    def get_range_ps(self):
+
+
+        #Convert to Pixels
+        low_bound = np.array([self.Options.LOWER_X_P_BOUNDS,self.Options.LOWER_Y_P_BOUNDS])
+        up_bound = np.array([self.Options.UPPER_X_P_BOUNDS,self.Options.UPPER_Y_P_BOUNDS])
+
+        x_mid_range = (up_bound[0] - low_bound[0])/2.0
+        y_mid_range = (up_bound[1] - low_bound[1])/2.0
+
+        x_center = low_bound[0] + x_mid_range
+        y_center = low_bound[1] + y_mid_range
+
+
         return [x_mid_range,y_mid_range,x_center,y_center]
 
     def scale(self,deltas,constants):
@@ -52,8 +69,6 @@ class Compile_Sup:
         if(len(deltas) == 4):
             deltas[3] = (deltas[3] - self.Options.Z_MIN)/((self.Options.Z_MAX - self.Options.Z_MIN)/2.0) - 1
 
-
-
         return deltas
 
     def get_rollout(self,f_name):
@@ -65,7 +80,11 @@ class Compile_Sup:
         train_path = self.Options.train_file
         test_path = self.Options.test_file
         deltas_path = self.Options.deltas_file
-        scale_constants = self.get_range()
+
+        if(self.Options.SENSOR == 'PRIMESENSE'):
+            scale_constants = self.get_range_ps()
+        else:
+            scale_constants = self.get_range()
 
         if(img_path == None):
             img_path = self.Options.binaries_dir
@@ -83,7 +102,6 @@ class Compile_Sup:
             l = line.split()
             cur_rollout = self.get_rollout(l[0])
 
-
             if(cur_rollout != p_rollout):
                 p_rollout = cur_rollout
                 if random.random() > .2:
@@ -95,10 +113,12 @@ class Compile_Sup:
             labels = line.split()
 
             print labels
-        
 
            
             deltas = self.scale(labels[1:len(labels)],scale_constants)
+
+            deltas = self.scale(labels[1:len(labels)],scale_constants)
+
 
             line = labels[0] + " "
             for bit in deltas:

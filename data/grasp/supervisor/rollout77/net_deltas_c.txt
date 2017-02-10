@@ -1,0 +1,3 @@
+rollout77_frame_0.npy 87 97 115.868514036 0.0434 
+rollout77_frame_1.npy 87 97 115.868514036 0.0434 
+rollout77_frame_2.npy 87 97 115.868514036 0.0434 

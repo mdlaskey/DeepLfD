@@ -70,12 +70,15 @@ class Common:
         deltas[0] = float(deltas[0])
         deltas[1] = float(deltas[1])
         deltas[2] = float(deltas[2])
+        deltas[3] = float(deltas[3])
+
         deltas[0] = self.constants[0]*deltas[0]+self.constants[2]
         deltas[1] = self.constants[1]*deltas[1]+self.constants[3]
-        deltas[2] = (deltas[2]+1)*((self.Options.ROT_MAX - self.Options.ROT_MIN)/2)+self.Options.ROT_MIN
+
+        deltas[2] = (deltas[2]+1)*((self.Options.ROT_MAX - self.Options.ROT_MIN)/2.0)+self.Options.ROT_MIN
 
         if(len(deltas) == 4):
-            deltas[3] = (deltas[3]+1)*((self.Options.Z_MAX - self.Options.Z_MIN)/2)+self.Options.Z_MIN
+            deltas[3] = (deltas[3]+1)*((self.Options.Z_MAX - self.Options.Z_MIN)/2.0)+self.Options.Z_MIN
 
         return deltas
 

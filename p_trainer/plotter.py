@@ -19,6 +19,7 @@ def plot_net(training, test, filter_name, save_dir, plot_num, step_size = 10):
 	'''
 
 	iterations = [step_size * i for i in range(len(training))]
+
 	
 	plt.figure(plot_num)
 	plt.title(filter_name)

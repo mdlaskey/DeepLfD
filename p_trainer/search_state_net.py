@@ -33,7 +33,11 @@ from plotter import plot_net
 #specific: imports options from specific options file
 from deep_lfd.p_pi.p_grasp.options import Grasp_Options as options 
 #specific: fetches specific net file
+<<<<<<< HEAD
 from deep_lfd.tensor.net_grasp_v2 import Net_Grasp as Net 
+=======
+from deep_lfd.tensor.net_grasp import Net_Grasp as Net 
+>>>>>>> 9d17746a32790527bde00ecff4e77fc40d836bbb
 
 
 #########SYNTHETIC PARAMS##########
@@ -51,8 +55,10 @@ max_rot = 20
 
 ########TRAINING PAPRAMETERS##########
 batch_size = 150
+
 iterations = 600
 plot_dir = "plots_v2"
+
 
 ########################################################
 
@@ -155,7 +161,6 @@ if __name__ == '__main__':
     nodes = 500
     windows = 5
 
-
     plot_num = 0
     for test in all_tests:
         curr_options = test[0]
@@ -173,10 +178,6 @@ if __name__ == '__main__':
         plot_net(train_log, test_log, curr_name, Options.setup_dir + plot_dir, plot_num)
         plot_num += 1
 
-
-    # Try Different Filters 
-    # Binaries Filter 
-    # CS.compile_reg(Options.binary_dir)
 
     # data = inputdata.IMData(Options.train_file, Options.test_file) 
     # net = Net(Options)  
@@ -246,4 +247,5 @@ if __name__ == '__main__':
     # net.optimize(iterations,data, batch_size=batch_size)
     # train_log, test_log = net.get_logs()
     # plot_net(train_log, test_log, "RGB Mask Binned", Options.setup_dir + plot_dir, 7)
+
 

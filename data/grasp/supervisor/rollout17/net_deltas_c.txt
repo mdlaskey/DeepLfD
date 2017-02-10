@@ -1,0 +1,3 @@
+rollout17_frame_0.npy 69 95 59.0736960285 0.0449 
+rollout17_frame_1.npy 69 95 59.0736960285 0.0449 
+rollout17_frame_2.npy 69 95 59.0736960285 0.0449 

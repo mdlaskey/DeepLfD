@@ -57,6 +57,7 @@ class Options():
         self.rollouts_dir = self.setup_dir + "rollouts/"
         self.sup_dir = self.setup_dir + "supervisor/"
         self.binaries_dir = self.setup_dir + "binaries/"
+        self.depth_dir = self.setup_dir + "depth/"
 
         self.originals_dir = self.setup_dir + "originals/"
 

@@ -5,13 +5,13 @@ import IPython
 import cv2
 
 
-from alan.synthetic.synthetic_translation import transform_image
-from alan.synthetic.synthetic_rotation import rotate_images
-from alan.rgbd.registration_wc import RegWC
-from alan.synthetic.synthetic_util import re_binarize
+from deep_lfd.synthetic.synthetic_translation import transform_image
+from deep_lfd.synthetic.synthetic_rotation import rotate_images
+from deep_lfd.rgbd.registration_wc import RegWC
+from deep_lfd.synthetic.synthetic_util import re_binarize
 import numpy as np, argparse
 #Things to change
-
+from perception import DepthImage, RgbdForegroundMaskQueryImageDetector
 from alan.core.points import Point
 
 
@@ -51,6 +51,12 @@ class Affine_Synthetic:
                     infile.close()
 
 
+    def get_bounds_ps(self):
+        rot_bounds = np.array([self.options.ROT_MIN,self.options.ROT_MAX])
+        p_l_b = np.array([self.options.LOWER_X_P_BOUNDS,self.options.LOWER_Y_P_BOUNDS])
+        p_u_b = np.array([self.options.UPPER_X_P_BOUNDS,self.options.UPPER_Y_P_BOUNDS])
+
+        return p_l_b,p_u_b,rot_bounds
 
     def get_bounds(self):
         low_bound = np.array([self.options.X_LOWER_BOUND,self.options.Y_LOWER_BOUND])
@@ -88,11 +94,20 @@ class Affine_Synthetic:
             img = img_d[3]
             #img = re_binarize(img)
 
-            cv2.imwrite(path+rollout+'_frame_'+str(index)+".png",img)
+            img.save(path+rollout+'_frame_'+str(index)+".npy")
 
             print "IMAGE INDEX ", str(index)
 
         return
+
+    def load_images(self,path):
+        if self.options.SENSOR == 'PRIMESENSE':
+            img = DepthImage.open(path)
+        elif self.options.SENSOR == 'BINCAM':
+            img = BinaryImage.open(path)
+
+        return img
+
 
 
 
@@ -104,7 +119,12 @@ class Affine_Synthetic:
         changes = []
         idx = self.options.T
         i = 0
-        bounds = self.get_bounds()
+
+        if(self.options.SENSOR == 'PRIMESENSE'):
+            bounds = self.get_bounds_ps()
+        else: 
+            bounds = self.get_bounds()
+            
         for line in f:
             f_c.write(line)
             line = line.split()
@@ -119,8 +139,14 @@ class Affine_Synthetic:
                 self.save_images(imgs)
 
             if(self.rotation):
-                cp = np.array([float(line[1]),float(line[2]),float(line[3])])
-                deltas,idx,imgs = rotate_images(imgs,idx,bounds,deltas,cp,max_imgs = self.max_rot)
+                imgs = []
+                if(not self.translation):
+                    img = self.load_images(self.options.binaries_dir+line[0])
+                    img_data = [self.options.binaries_dir,rollout,idx,img]
+                    imgs.append(img_data)
+
+                cp = np.array([float(line[1]),float(line[2]),float(line[3]),float(line[4])])
+                deltas,idx,imgs = rotate_images(imgs,idx,bounds,cp,max_imgs = self.max_rot)
        
                 changes.append(deltas)
                 #Save images 
@@ -148,7 +174,7 @@ class Affine_Synthetic:
         for i in range(len(changes)):
             for k in range(len(changes[i])):
                 
-                f_name = rollout+"_frame_"+str(idx)+".png"
+                f_name = rollout+"_frame_"+str(idx)+".npy"
                 f.write(f_name+self.conv_deltas_to_str(changes[i][k]))
                 #print f_name+conv_deltas_to_str(changes[i][k])
                 idx += 1

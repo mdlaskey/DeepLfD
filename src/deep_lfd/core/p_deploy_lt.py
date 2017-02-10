@@ -5,21 +5,22 @@ Author: Michael Laskey
 '''
 import sys
 import tty, termios
-from alan.rgbd.bincam_2D import BinaryCamera 
-from alan.rgbd.registration_wc import RegWC
+from deep_lfd.rgbd.bincam_2D import BinaryCamera 
+from deep_lfd.rgbd.registration_wc import RegWC
 from alan.control import YuMiRobot, YuMiState, YuMiControlException
-from alan.debug.ar_overlay import AR_Debug
+from deep_lfd.debug.ar_overlay import AR_Debug
 import time, datetime, os, random, argparse
 import cv2
 import IPython
 import numpy as np
 
+from visualization import Visualizer2D as vis2d
 
 
 
 class  Policy():
 
-    def __init__(self, yumi,com,cam,debug = False):
+    def __init__(self, yumi,com,depthcam=None,bincam=None,debug = False):
         '''
         Initialization class for a Policy
 
@@ -38,7 +39,11 @@ class  Policy():
         self.yumi = yumi
         self.com = com
 
-        self.bc = cam
+        if(not bincam == None):
+            self.bc = bincam
+        elif(not depthcam == None):
+            self.dc = depthcam
+
         self.cp = self.com.get_cp(yumi)
         if(debug):
             debug_ar = AR_Debug(self.bc,self.com)
@@ -81,6 +86,49 @@ class  Policy():
             print str(e)
             self.yumi.set_v(1500)
             self.com.error_handler(self.yumi)
+
+
+    def rollout_ps(self):
+        '''
+        Evaluates the current policy and then executes the motion 
+        specified in the the common class
+
+
+        '''
+        
+        time.sleep(.5)
+       
+        
+        [c_im,d_im,state] = self.com.get_grasp_state(self.dc)
+        vis2d.imshow(state)
+        vis2d.show()
+        pos,rot = self.com.eval_policy(state)
+
+        posit = pos - self.cp.position 
+
+        ####HANDLE ROTATION####
+        
+        curr_angle = self.cp.euler_angles[2]
+        rotation = rot*np.pi/180.0
+   
+        rotation = -(rotation - curr_angle)
+    
+
+        rot = rotation*180.0/np.pi
+      
+        self.com.move_to_pose(self.yumi,posit,rot)
+
+        try:
+            self.com.execute_motion(self.yumi)  
+        except YuMiControlException, e:
+            print str(e)
+            self.yumi.set_v(1500)
+            self.com.error_handler(self.yumi)
+
+        self.yumi.left.open_gripper()
+        self.com.go_to_initial_state(self.yumi)
+       
+
        
 
 

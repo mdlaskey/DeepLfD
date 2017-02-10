@@ -2,6 +2,7 @@
     Network takes in a image and outputs (x,y,theta,z)
     Model for net3
         conv
+        conv
         relu
         fc
         relu
@@ -11,7 +12,7 @@
 
 
 import tensorflow as tf
-import inputdata
+import deep_lfd.tensor.inputdata
 import random
 from tensornet import TensorNet
 #from alan.p_grasp_align.options import Grasp_AlignOptions as options

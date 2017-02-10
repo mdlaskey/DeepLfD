@@ -12,8 +12,8 @@ from deep_lfd.core.net_trainer import Net_Trainer
 from deep_lfd.rgbd.bincam_2D import BinaryCamera 
 
 ###############CHANGGE BELOW TO TRAIN A DIFFERENT PRIMITIVE##############
-from deep_lfd.p_pi.p_grasp.options import Grasp_Options as p_options
-from deep_lfd.p_pi.p_grasp.com import Grasp_COM as com
+from deep_lfd.p_pi.p_grasp_rss.options import Grasp_Options as p_options
+from deep_lfd.p_pi.p_grasp_rss.com import Grasp_COM as com
 ##########################################################################
 
 class Demonstration:

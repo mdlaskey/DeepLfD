@@ -1,0 +1,3 @@
+rollout32_frame_0.npy 88 97 144.741409103 0.0207 
+rollout32_frame_1.npy 88 97 144.741409103 0.0207 
+rollout32_frame_2.npy 88 97 144.741409103 0.0207 

@@ -1,3 +1,5 @@
+"""moved to synthetic.py"""
+
 import numpy as np
 import cv2
 import math
@@ -38,7 +40,7 @@ def get_translation(data, curr_pix_shift, dim):
 
     M = np.array([[1.0, 0, 0], [0, 1.0, 0]])
     M[dim,2] = float(curr_pix_shift)
- 
+
     shifted_matrix = cv2.warpAffine(matrix, M, (cols, rows))
 
     curr_shift = [prev_shift[0], prev_shift[1]]
@@ -100,7 +102,7 @@ def transform_image(path, rollout, f_name, index, bounds, cp, options=None, max_
     shifts = [[matrix, [0, 0]]]
 
     #add all shifts with just y translation
-  
+
     shifts += get_translations_1D(shifts[0], [num_shifts[i][1] for i in range(2)], step, 1)
 
     xshifts = []
@@ -112,7 +114,7 @@ def transform_image(path, rollout, f_name, index, bounds, cp, options=None, max_
     #grab correct shifts and prepare for neural net
     shifts = shifts + xshifts
 
-    
+
 
     shifts = shifts[1:max_imgs]
     #IPython.embed()
