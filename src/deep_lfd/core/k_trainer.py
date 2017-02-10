@@ -127,15 +127,6 @@ class Kinesthetic_Trainer:
         self.syncer.flush()
         logging.info("Data sources init done!")
 
-    def _stop(self):
-        self.syncer.stop()
-        self.ysub.stop()
-        try:
-            self.webcam.stop()
-        except Exception:
-            pass
-        logging.info("Stopped syncer and ysub!")
-
     def start_motion(self, collect_timing=False):
         '''
         Starts recording the moitons of the YuMi's Arms
@@ -174,10 +165,16 @@ class Kinesthetic_Trainer:
                                            self.save_file_paths,
                                            self.all_datas,
                                            self.cfg['fps'])
-                self._stop()
+                self.syncer.stop()
+                self.ysub.stop()
+                try:
+                    self.webcam.stop()
+                except Exception:
+                    pass
+                logging.info("Stopped syncer and ysub!")
                 _ = raw_input("Please start server so takedown motions can be performed. Click [ENTER] to confirm.\n")
                 logging.info("Performing takedown motions...")
-                sleep(4)
+                sleep(3)
                 self.yumi = YuMiRobot()
                 self.yumi.set_v(self.cfg['v'])
                 self.yumi.set_z(self.cfg['z'])
