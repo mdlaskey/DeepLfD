@@ -6,44 +6,60 @@ from numpy.random import rand,randint
 
 from keras.models import Sequential
 from keras.optimizers import SGD
-from keras.layers import Dense, Activation
+from keras.layers import Dense, Activation, Flatten
+from keras.layers.convolutional import Convolution2D
+from keras.utils.np_utils import to_categorical
 
 from deep_lfd.learning_driving.learner import *
-from keras.utils.np_utils import to_categorical
+# from deep_lfd.tensor.nets.net_driving import *
 # y_binary = to_categorical(y_int)
 
 class DeepLearner(Learner):   
 
 	def __init__(self):
 		super(DeepLearner, self).__init__()
-		model = Sequential()
-		model.add(Dense(output_dim=64, input_dim=30240))
-		model.add(Activation("relu"))
-		model.add(Dense(output_dim=5))
-		model.add(Activation("softmax"))
-		model.compile(loss='categorical_crossentropy', optimizer='sgd', metrics=['accuracy'])
-		self.net = model
+		self.reset()
 
 	def train_learner(self):
-		print("adding to data")
-		X_train, Y_train = self.compile_training()
-		print("fitting")
-		Y_train_one_hot = to_categorical(Y_train, nb_classes=5)
-		self.net.fit(X_train, Y_train_one_hot, nb_epoch=5, batch_size=32)
+		train_states, train_labels = self.compile_dataset('train', tensor=True)
+		train_labels = to_categorical(train_labels, nb_classes=5)
+		self.net.fit(train_states, train_labels, nb_epoch=5, batch_size=32, verbose=0)
 
 	def eval_policy(self, state):
-		processed_state = self.preprocess_image(state).reshape(1, -1)
-		output = self.net.predict_classes(processed_state)[0]
+		processed_state = self.preprocess_image(state)
+		state_expanded = np.expand_dims(np.expand_dims(processed_state, 0), 1)
+		output = self.net.predict_classes(state_expanded, verbose=0)[0]
 		return output
 
 	def get_statistics(self):
-		train_score = np.mean(np.array([self.net.evaluate(np.array(self.train_states[i]), \
-			to_categorical(np.array(self.train_labels[i]), nb_classes=5)) \
-			for i in range(len(self.train_states))]))
-		test_score = np.mean(np.array([self.net.evaluate(np.array(self.test_states[i]), \
-			to_categorical(np.array(self.test_labels[i]), nb_classes=5)) \
-			for i in range(len(self.test_states))]))
-		return train_score, test_score
+		train_states, train_labels = self.compile_dataset('train', tensor=True)
+		train_labels = to_categorical(train_labels, nb_classes=5)
+		train_loss, train_acc = self.net.evaluate(train_states, train_labels, verbose=0)
+		test_states, test_labels = self.compile_dataset('test', tensor=True)
+		test_labels = to_categorical(test_labels, nb_classes=5)
+		if len(test_states) > 0:
+			test_loss, test_acc = self.net.evaluate(test_states, test_labels, verbose=0)
+		else:
+			test_loss, test_acc = [np.inf, 0.0]
+		return train_acc, test_acc
+
+	def preprocess_image(self, state):
+		downsampled = self.downsample_image(self.downsample_image(state))
+		return downsampled
+
+	def reset(self):
+		super(DeepLearner, self).reset()
+		model = Sequential()
+		model.add(Convolution2D(5, 7, 7, border_mode='same', input_shape=(1, 125, 125)))
+		model.add(Activation("relu"))
+		model.add(Flatten())
+		model.add(Dense(output_dim=60))
+		model.add(Activation("relu"))
+		model.add(Dense(output_dim=5))
+		model.add(Activation("softmax"))
+		model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy'])
+		self.net = model
+		# self.net = Net_Driving(channels=1)
 
 class IMData():
 	
@@ -54,6 +70,7 @@ class IMData():
 
 		self.tst_s = tst_s
 		self.tst_l = tst_l
+		self.channels = channels
 
 
 	def next_train_batch(self,n):

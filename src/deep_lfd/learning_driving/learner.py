@@ -3,11 +3,61 @@ import numpy as np
 from numpy.random import rand,randint
 import cv2 
 import IPython
+from sklearn.cross_validation import train_test_split
 
 class Learner(object):
 
 	def __init__(self):
+		self.reset()
+		
 
+	def compile_dataset(self, dataset='train', tensor=False):
+		"""
+		Read into memory on request
+		:param n: number of examples to return in batch
+		:return: tuple with images in [0] and labels in [1]
+		"""
+		if dataset == 'train':	
+			states = np.array([state for traj in self.train_states for state in traj])
+			labels = np.array([label for traj in self.train_labels for label in traj])
+		elif dataset == 'test':
+			states = np.array([state for traj in self.test_states for state in traj])
+			labels = np.array([label for traj in self.test_labels for label in traj])
+		else:
+			raise NotImplementedError
+		if tensor:
+			states = np.expand_dims(states, 1)
+		return states, labels
+
+	def add_to_data(self, states, labels):
+		num_trajectories = len(states)
+		train_states, test_states, train_labels, test_labels = train_test_split(states, labels, test_size=0.1)
+		train_states_processed = [[self.preprocess_image(image) for image in traj] for traj in train_states]
+		test_states_processed = [[self.preprocess_image(image) for image in traj] for traj in test_states]
+		self.train_states.extend(train_states_processed)
+		self.test_states.extend(test_states_processed)
+		self.train_labels.extend(train_labels)
+		self.test_labels.extend(test_labels)
+		# for i in range(num_trajectories):
+		# 	if(rand() > 0.1):
+		# 		# List of trajectories
+		# 		self.train_states.append([self.preprocess_image(image) for image in states[i]])
+		# 		self.train_labels.append(labels[i])
+		# 	else:
+		# 		self.test_states.append([self.preprocess_image(image) for image in states[i]])
+		# 		self.test_labels.append(labels[i])
+
+	def downsample_image(self, state):
+		w, h = state.shape
+		downsampled = cv2.pyrDown(state, dstsize = (w / 2, h / 2))
+		return downsampled
+
+	def extract_HOG(self, state):
+		hog = cv2.HOGDescriptor()
+		h = np.ravel(hog.compute(state))
+		return h
+
+	def reset(self):
 		self.state_space = []
 		self.labels = []
 
@@ -21,59 +71,3 @@ class Learner(object):
 
 		self.test_loss = []
 		self.train_loss = []
-
-	def compile_training(self):
-		"""
-		Read into memory on request
-		:param n: number of examples to return in batch
-		:return: tuple with images in [0] and labels in [1]
-		"""
-		num_data = len(self.train_states)
-		batch = []
-
-		for i in range(num_data):
-			traj_idx = i
-			traj_len = len(self.train_states[traj_idx])
-			for j in range(traj_len):
-				state_idx = j
-				# traj_idx = randint(num_data)
-				# state_idx = randint(traj_len)
-				im = self.train_states[traj_idx][state_idx]
-				# IPython.embed()
-
-				label = self.train_labels[traj_idx][state_idx]
-				batch.append((im, label))
-
-		# IPython.embed()
-		batch = zip(*batch)
-		return np.array(list(batch[0])), np.array(list(batch[1]))
-
-	def add_to_data(self, states, labels):
-
-		#First split between test and train 
-
-		num_trajectories = len(states)
-		for i in range(num_trajectories):
-			if(rand() > 0.1):
-				# hog_state = self.extract_HOG(states[i])
-				# List of trajectories
-				self.train_states.append([self.preprocess_image(image) for image in states[i]])
-				self.train_labels.append(labels[i])
-			else:
-				self.test_states.append([self.preprocess_image(image) for image in states[i]])
-				self.test_labels.append(labels[i])
-
-	def preprocess_image(self, state):
-		# IPython.embed()
-		w, h = state.shape
-		downsampled = cv2.pyrDown(state, dstsize = (w / 2, h / 2))
-		w, h = downsampled.shape
-		downsampled = cv2.pyrDown(downsampled, dstsize = (w / 2, h / 2))
-		hog = self.extract_HOG(downsampled)
-		return hog
-
-	def extract_HOG(self, state):
-		hog = cv2.HOGDescriptor()
-		h = np.ravel(hog.compute(state))
-		return h
-

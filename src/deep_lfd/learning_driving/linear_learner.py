@@ -10,13 +10,10 @@ class LinearLearner(Learner):
 
 	def __init__(self):
 		super(LinearLearner, self).__init__()
-		self.net = svm.LinearSVC()
+		self.reset()
 
 	def train_learner(self):
-		print("adding to data")
-		X_train, Y_train = self.compile_training()
-		print("fitting")
-		# IPython.embed()
+		X_train, Y_train = self.compile_dataset('train')
 		self.net.fit(X_train, Y_train)
 
 	def eval_policy(self, state):
@@ -25,12 +22,21 @@ class LinearLearner(Learner):
 		return output
 
 	def get_statistics(self):
-		train_score = np.mean(np.array([self.net.score(self.train_states[i], self.train_labels[i]) \
-			for i in range(len(self.train_states))]))
-		test_score = np.mean(np.array([self.net.score(self.test_states[i], self.test_labels[i]) \
-			for i in range(len(self.test_states))]))
-		return train_score, test_score
+		train_states, train_labels = self.compile_dataset('train')
+		train_acc = self.net.score(train_states, train_labels)
+		test_states, test_labels = self.compile_dataset('test')
+		if len(test_states) > 0:
+			test_acc = self.net.score(test_states, test_labels)
+		else:
+			test_acc = 0.0
+		return train_acc, test_acc
 
+	def preprocess_image(self, state):
+		squeezed = np.squeeze(state)
+		downsampled = self.downsample_image(self.downsample_image(squeezed))
+		hog = self.extract_HOG(downsampled)
+		return hog
 
-
-
+	def reset(self):
+		super(LinearLearner, self).reset()
+		self.net = svm.LinearSVC()
