@@ -21,7 +21,7 @@ import robot_logger as audio_logger
 from visualization import Visualizer2D as vis2d
 class  Net_Trainer():
 
-    def __init__(self,com,net_name,c,sub,bincam = None, depthcam = None):
+    def __init__(self,com,net_name,c,sub,bincam = None, depthcam = None, use_audio = False):
         """
             Init function for Net_Trainer 
 
@@ -42,6 +42,8 @@ class  Net_Trainer():
             sub: Yumi Subscriber Class
                 YuMi Subscrber must have start enabled (i.e. sub.start())
 
+            use_audio: Whether to use the Echo as input and speakers for output, or the Xbox controller
+
         """
         self.com = com
         
@@ -49,6 +51,8 @@ class  Net_Trainer():
         self.sub = sub
      
         self.net_name = net_name
+
+        self.use_audio = use_audio
 
         
 
@@ -173,10 +177,15 @@ class  Net_Trainer():
                 If set to true will display a binary mask, while false displays the color image
 
         """
-        print "Ready for commands"
+        if self.use_audio:
+            print "Ready for commands"
+            audio_logger.log("Ready for commands")
+
         while True:
-            # update = self.c.getUpdates()
-            update = self.detect_echo_record()
+            if self.use_audio:
+                update = self.detect_echo_record()
+            else:
+                update = self.c.getUpdates()
             if(self.com.Options.SENSOR == 'BINCAM'):
                 if(use_binary):
                     state = self.bc.read_binary_frame()
@@ -190,9 +199,10 @@ class  Net_Trainer():
                 #cv2.imshow('state',thumb_img.data )
                 #vis2d.show()
            
-           # if update == None:
-            if update:
-                break;
+            if self.use_audio and update:
+                break
+            elif not self.use_audio and update == None:
+                break
 
 
 
@@ -203,13 +213,20 @@ class  Net_Trainer():
 
         """
         terminate = False
-        print "Now you can move the arm"
+        if self.use_audio:
+            print "Now you can move the arm"
+            audio_logger.log("You may guide my arm now")
         while not terminate:
-            # update = self.c.getUpdates()
-            # if update == None:
-            update = self.detect_echo_record()
-            if update:
-                
+            has_update = False
+            if self.use_audio:
+                update = self.detect_echo_record()
+                if update:
+                    has_update = True
+            else:
+                update = self.c.getUpdates()
+                if update == None:
+                    has_update = True
+            if has_update:
                 #clear buffer 
                 for i in range(5):
                     pose = self.sub.left.get_pose()
@@ -222,7 +239,15 @@ class  Net_Trainer():
                 translation = pose_t[2]
                 if(self.com.check_data(rotation,translation)):
                     terminate = True
+                    audio_logger.log("Success!")
                 else: 
+                    message = "Invalid label"
+                    if rotation < 0 or rotation > 180:
+                        audio_logger.log(message + "! The gripper needs to be rotated")
+                    elif translation > 0.22:
+                        audio_logger.log(message + "! The gripper is too high")
+                    elif translation < 0.17:
+                        audio_logger.log(message + "! The gripper is too low")
                     print "INCORRECT LABELS "
                     print "ROTATION ",rotation
                     print "Z AXIS ", translation
@@ -254,10 +279,16 @@ class  Net_Trainer():
         """
         terminate = False
         while not terminate:
-            # update = self.c.getUpdates()
-            # if update == None:
-            update = self.detect_echo_record()
-            if update:
+            has_update = False
+            if self.use_audio:
+                update = self.detect_echo_record()
+                if update:
+                    has_update = True
+            else:
+                update = self.c.getUpdates()
+                if update == None:
+                    has_update = True
+            if has_update:
                 
                 #clear buffer 
                 for i in range(5):
@@ -298,10 +329,16 @@ class  Net_Trainer():
 
         """
         while True:
-            # update = self.c.getUpdates()
-            # if update == None:
-            update = self.detect_echo_record()
-            if update:
+            has_update = False
+            if self.use_audio:
+                update = self.detect_echo_record()
+                if update:
+                    has_update = True
+            else:
+                update = self.c.getUpdates()
+                if update == None:
+                    has_update = True
+            if has_update:
 
                 if(arm == 'LEFT'):
                     pose = self.sub.left.get_pose()
@@ -354,6 +391,8 @@ class  Net_Trainer():
         command = audio_logger.getDataCommand()
         if command is not None:
             print "The Echo heard a Record! Wait for the next line..."
+            audio_logger.log("I heard re cord! Please wait.")
+            time.sleep(3)
             return True
         # print "Not recording"
         return False

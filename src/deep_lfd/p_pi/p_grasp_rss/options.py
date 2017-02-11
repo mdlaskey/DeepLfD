@@ -22,8 +22,10 @@ class Grasp_Options(Options):
     ROT_MAX = 180
     ROT_MIN = 0.0
 
-    Z_MIN = 0.012
-    Z_MAX = 0.070
+    # Z_MIN = 0.012
+    # Z_MAX = 0.070
+    Z_MIN = 0.17
+    Z_MAX = 0.22
 
     SENSOR = 'PRIMESENSE'
 
