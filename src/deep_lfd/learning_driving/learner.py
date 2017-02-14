@@ -47,13 +47,14 @@ class Learner(object):
 		# 		self.test_states.append([self.preprocess_image(image) for image in states[i]])
 		# 		self.test_labels.append(labels[i])
 
-	def downsample_image(self, state):
-		w, h = state.shape
-		downsampled = cv2.pyrDown(state, dstsize = (w / 2, h / 2))
-		return downsampled
+	def downsample_image(self, state, n_iters=1):
+		for _ in range(n_iters):
+			w, h = state.shape
+			state = cv2.pyrDown(state, dstsize = (w / 2, h / 2))
+		return state
 
 	def extract_HOG(self, state):
-		winSize = (128,128)
+		winSize = (state.shape[0], state.shape[1])
 		blockSize = (16,16)
 		blockStride = (8,8)
 		cellSize = (8,8)

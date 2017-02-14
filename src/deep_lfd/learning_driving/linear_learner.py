@@ -33,7 +33,7 @@ class LinearLearner(Learner):
 
 	def preprocess_image(self, state):
 		squeezed = np.squeeze(state)
-		downsampled = self.downsample_image(self.downsample_image(squeezed))
+		downsampled = self.downsample_image(squeezed, n_iters=3)
 		hog = self.extract_HOG(downsampled)
 		return hog
 
