@@ -20,7 +20,7 @@ import datetime
 
 class Net_Grasp(TensorNet):
 
-    def __init__(self, channels=3):
+    def __init__(self, options, channels=3):
         self.dir = "./net6/"
         self.name = "grasp_net"
         self.channels = channels
@@ -48,7 +48,7 @@ class Net_Grasp(TensorNet):
         self.w_fc2 = self.weight_variable([fc1_num_nodes, 4])
         self.b_fc2 = self.bias_variable([4])
 
-        self.y_out = tf.tanh(tf.matmul(self.h_fc1, self.w_fc2) + self.b_fc2)
+        self.y_out = tf.tanh(tf.matmul(self.y_out, self.w_fc2) + self.b_fc2)
 
         self.loss = tf.reduce_mean(.5*tf.sqrt(tf.square(self.y_out - self.y_)))
 

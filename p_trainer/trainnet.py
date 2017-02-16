@@ -26,8 +26,8 @@ import sys, os
 
 #quick fix- no permission to change paths
 sys.path.insert(0, "/home/annal/DeepLfD/src")
-sys.path.insert(0, "home/annal/perception")
-import perception.image
+
+# import image
 
 import IPython
 from deep_lfd.tensor import inputdata

@@ -67,7 +67,7 @@ class Synthetic:
                 new_label = np.append(new_xy, new_theta, np.array([label[3]]))
 
                 if check_bounds(new_label):
-                    curr = np.append(curr, (new_img, new_label)))
+                    curr = np.append(curr, (new_img, new_label))
                     sample_num += 1
 
             results = np.append(results, curr)
@@ -104,7 +104,7 @@ class Synthetic:
                 new_label = np.append(new_xy, np.array([label[2], label[3]]))
 
                 if check_bounds(new_label):
-                    curr = np.append(curr, (new_img, new_label)))
+                    curr = np.append(curr, (new_img, new_label))
                     sample_num += 1
 
             results = np.append(results, curr)
@@ -129,7 +129,7 @@ class Synthetic:
             new_img = cv2.flip(img, 1)
             new_x = np.array([len(img.T) - label[0]])
             new_theta = np.array([180 - label[2]])
-            new_label = np.append(new_x, np.array([label[1]) new_theta, np.array(label[3]]))
+            new_label = np.append(new_x, np.array([label[1]]), new_theta, np.array([label[3]]))
 
             if check_bounds(new_label):
                 results = np.append(results, (new_img, new_label))
@@ -174,7 +174,7 @@ class Synthetic:
         b_l = self.bounds[0]
         b_u = self.bounds[1]
         b_r = self.bounds[2]
-        c_bounds = np.array([[b_l[0], b_u[0]], [b_l[1], b_u[1]], b_r)
+        c_bounds = np.array([[b_l[0], b_u[0]], [b_l[1], b_u[1]], b_r])
 
         for coord in range(3):
             if not (c_bounds[i][0] <= label[i] and c_bounds[i][1] >= label[i]):
