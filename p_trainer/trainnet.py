@@ -118,8 +118,8 @@ if __name__ == '__main__':
         print filenames
         f.extend(dirnames)
     for filename in f:
-        read_path = Options.sup_dir+filename+'/net_deltas.txt' #specific: sup_dir from specific options
-        if read_path.find("net_deltas") != -1 and read_path.find("~") == -1:
+        read_path = Options.sup_dir+filename+'/net_deltas_c.txt' #specific: sup_dir from specific options
+        if read_path.find("net_deltas_c") != -1 and read_path.find("~") == -1:
             index = int(filename[7:])
             if index < last and first <= index:
 
@@ -135,7 +135,8 @@ if __name__ == '__main__':
     CS.compile_reg(Options.binaries_dir)
 
     data = inputdata.IMData(Options.train_file, Options.test_file)
-    net = Net(Options)
+    synth = Synthetic(Options, num_samples = 20) 
+    net = Net(Options, synth)
     net.optimize(iterations,data, batch_size=batch_size, test_print = 10)
 
     ####GET TRAINING AND TEST####

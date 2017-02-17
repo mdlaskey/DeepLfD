@@ -6,7 +6,7 @@ import perception.image
 
 class Synthetic:
 
-    def __init__(self, Options, num_samples):
+    def __init__(self, Options, num_samples = 10):
         """
         Parameters
         ----------
@@ -14,11 +14,17 @@ class Synthetic:
         num : number of transformations to apply to each image in data
 
         """
+        lx = Options.LOWER_X_P_BOUNDS
+        hx = Options.UPPER_X_P_BOUNDS
+        ly = Options.LOWER_Y_P_BOUNDS
+        hy = Options.UPPER_Y_P_BOUNDS
+        lr = Options.ROT_MIN
+        hr = Options.ROT_MAX
 
-        self.bounds = Options.bounds
+        self.bounds = np.array([[lx, ly], [hx, hy], [lr, hr]])
         self.num = num_samples
 
-    def get_dist_from_bounds(image):
+    def get_dist_from_bounds(self, image):
         """
         Parameters
         ----------
@@ -36,7 +42,7 @@ class Synthetic:
 
         return lx, hx, ly, hy
 
-    def apply_rotations(data):
+    def apply_rotations(self, data):
         """
         Parameters
         ----------
@@ -51,7 +57,7 @@ class Synthetic:
         results = np.array([])
 
         for img, label in data:
-
+            img = Image(img)
             curr = np.array([(img, label)])
 
             sample_num = 0
@@ -66,7 +72,7 @@ class Synthetic:
                 new_theta = np.array([label[2] - degree_shift])
                 new_label = np.append(new_xy, new_theta, np.array([label[3]]))
 
-                if check_bounds(new_label):
+                if self.check_bounds(new_label):
                     curr = np.append(curr, (new_img, new_label))
                     sample_num += 1
 
@@ -74,7 +80,7 @@ class Synthetic:
 
         return results
 
-    def apply_translations(data):
+    def apply_translations(self, data):
         """
         Parameters
         ----------
@@ -93,7 +99,7 @@ class Synthetic:
 
             sample_num = 0
             while sample_num < self.num:
-                lx, hx, ly, hy = get_dist_from_bounds(matrix)
+                lx, hx, ly, hy = self.get_dist_from_bounds(matrix)
 
                 x_shift = np.random.uniform(-lx, hx)
                 y_shift = np.random.uniform(-ly, hy)
@@ -103,7 +109,7 @@ class Synthetic:
                 new_xy = np.array([label[0] + x_shift, label[1] + y_shift])
                 new_label = np.append(new_xy, np.array([label[2], label[3]]))
 
-                if check_bounds(new_label):
+                if self.check_bounds(new_label):
                     curr = np.append(curr, (new_img, new_label))
                     sample_num += 1
 
@@ -111,7 +117,7 @@ class Synthetic:
 
         return results
 
-    def apply_reflection(data):
+    def apply_reflection(self, data):
         """
         Parameters
         ----------
@@ -131,12 +137,12 @@ class Synthetic:
             new_theta = np.array([180 - label[2]])
             new_label = np.append(new_x, np.array([label[1]]), new_theta, np.array([label[3]]))
 
-            if check_bounds(new_label):
+            if self.check_bounds(new_label):
                 results = np.append(results, (new_img, new_label))
 
         return results
 
-    def apply_filters(data, rotate = False, translate = False, reflect = False):
+    def apply_filters(self, data, rotate = False, translate = False, reflect = False):
         """
         Parameters
         ----------
@@ -151,16 +157,16 @@ class Synthetic:
         output_data = np.copy(data)
 
         if rotate:
-            output_data = np.append(output_data, apply_rotations(data, 20))
+            output_data = np.append(output_data, self.apply_rotations(data))
         if translate:
-            output_data = np.append(output_data, apply_translations(data, 20))
+            output_data = np.append(output_data, self.apply_translations(data))
         if reflect:
-            output_data = np.append(output_data, apply_reflection(data))
+            output_data = np.append(output_data, self.apply_reflection(data))
 
         return output_data
 
 
-    def check_bounds(label):
+    def check_bounds(self, label):
         """
         Parameters
         ----------

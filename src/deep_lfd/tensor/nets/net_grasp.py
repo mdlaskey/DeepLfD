@@ -20,7 +20,7 @@ import datetime
 
 class Net_Grasp(TensorNet):
 
-    def __init__(self, options, channels=3):
+    def __init__(self, options, synth, channels=3):
         self.dir = "./net6/"
         self.name = "grasp_net"
         self.channels = channels
@@ -56,4 +56,4 @@ class Net_Grasp(TensorNet):
         self.train_step = tf.train.MomentumOptimizer(.003, .9)
         self.train = self.train_step.minimize(self.loss)
 
-        TensorNet.__init__(self)
+        TensorNet.__init__(self, synth)

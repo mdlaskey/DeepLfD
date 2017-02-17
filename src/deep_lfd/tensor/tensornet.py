@@ -22,7 +22,6 @@ import tensorflow as tf
 import time
 import datetime
 from deep_lfd.tensor.inputdata import im2tensor
-import deep_lfd.synthetic.synthetic
 import deep_lfd.tensor.inputdata
 import logging
 import IPython
@@ -35,7 +34,7 @@ import os
 
 class TensorNet():
 
-    def __init__(self):
+    def __init__(self, synth):
         self.test_loss = 0
         self.train_loss = 0
         # self.Options = options()
@@ -43,6 +42,7 @@ class TensorNet():
         self.train_log = []
         self.test_log = []
         # raise NotImplementedError
+        self.synthetic = synth
 
     def save(self, sess, save_path=None):
 
@@ -108,7 +108,7 @@ class TensorNet():
 
                     if synthetic:
                         data = zip(ims, labels)
-                        data = apply_filters(data, rotate = True, translate = True, reflect = True)
+                        data = self.synthetic.apply_filters(data, rotate = True, translate = True, reflect = True)
                         
                     ims, labels = zip(*data)
 
