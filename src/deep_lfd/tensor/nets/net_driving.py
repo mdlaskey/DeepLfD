@@ -11,9 +11,9 @@
 
 
 import tensorflow as tf
-import inputdata
+import deep_lfd.tensor.inputdata
 import random
-from tensornet import TensorNet
+from deep_lfd.tensor.tensornet import TensorNet
 #from alan.p_grasp_align.options import Grasp_AlignOptions as options
 import time
 import datetime
@@ -31,14 +31,14 @@ class Net_Driving(TensorNet):
         v = tf.argmax(y_out,1)
         return y_out[:,v]
 
-    def __init__(self,channels=3):
+    def __init__(self,channels=1):
         self.dir = "./net6/"
         self.name = "grasp_net"
         self.channels = channels
       
 
-        self.x = tf.placeholder('float', shape=[None,250,250,self.channels])
-        self.y_ = tf.placeholder("float", shape=[None, 4])
+        self.x = tf.placeholder('float', shape=[None,128,128,self.channels])
+        self.y_ = tf.placeholder("float", shape=[None, 5])
 
 
         self.w_conv1 = self.weight_variable([7, 7, self.channels, 5])
@@ -56,11 +56,11 @@ class Net_Driving(TensorNet):
         self.h_conv_flat = tf.reshape(self.h_conv1, [-1, conv_num_nodes])
         self.h_fc1 = tf.nn.relu(tf.matmul(self.h_conv_flat, self.w_fc1) + self.b_fc1)
 
-        self.w_fc2 = self.weight_variable([fc1_num_nodes, 4])
-        self.b_fc2 = self.bias_variable([4])
+        self.w_fc2 = self.weight_variable([fc1_num_nodes, 5])
+        self.b_fc2 = self.bias_variable([5])
 
         
-        self.y_out = tf.nn.softmax(tf.matmul(self.h_1, self.w_fc2) + self.b_fc2)
+        self.y_out = tf.nn.softmax(tf.matmul(self.h_fc1, self.w_fc2) + self.b_fc2)
         
         self.loss = tf.reduce_mean(-tf.reduce_sum(self.y_ * tf.log(self.y_out), reduction_indices=[1]))
         

@@ -32,12 +32,15 @@ class Learner(object):
 	def add_to_data(self, states, labels):
 		num_trajectories = len(states)
 		train_states, test_states, train_labels, test_labels = train_test_split(states, labels, test_size=0.1)
+
 		train_states_processed = [[self.preprocess_image(image) for image in traj] for traj in train_states]
 		test_states_processed = [[self.preprocess_image(image) for image in traj] for traj in test_states]
+
 		self.train_states.extend(train_states_processed)
 		self.test_states.extend(test_states_processed)
 		self.train_labels.extend(train_labels)
 		self.test_labels.extend(test_labels)
+		
 		# for i in range(num_trajectories):
 		# 	if(rand() > 0.1):
 		# 		# List of trajectories

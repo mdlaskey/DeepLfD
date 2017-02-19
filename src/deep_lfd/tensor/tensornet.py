@@ -104,22 +104,23 @@ class TensorNet():
                     feed_dict = { self.x: ims, self.y_: labels }
 
                     if i % 10 == 0:
-                        batch_loss = self.loss.eval(feed_dict=feed_dict)
+                        #batch_loss = self.loss.eval(feed_dict=feed_dict)
+                        batch_acc = self.acc.eval(feed_dict=feed_dict)
                     
                         #print "TRAIN: X ERR "+ str(x_loss)+" Y ERR "+str(y_loss)
-                        print "[ Iteration " + str(i) + " ] Training loss: " + str(batch_loss)
-                        if(math.isnan(batch_loss)):
-                            raise Exception('Loss Exploded')
+                        print "[ Iteration " + str(i) + " ] Training loss: " + str(batch_acc)
+                        # if(math.isnan(batch_loss)):
+                        #     raise Exception('Loss Exploded')
                     if i % test_print == 0:
                         test_batch = data.next_test_batch()
                         test_ims, test_labels = test_batch
                         test_dict = { self.x: test_ims, self.y_: test_labels }
 
-                        test_loss = self.loss.eval(feed_dict=test_dict)
-                        
+                        #test_loss = self.loss.eval(feed_dict=test_dict)
+                        test_acc = self.acc.eval(feed_dict=test_dict)
                         
                         #print "TEST: X ERR "+ str(x_loss)+" Y ERR "+str(y_loss)
-                        print "[ Iteration " + str(i) + " ] Test loss: " + str(test_loss)
+                        print "[ Iteration " + str(i) + " ] Test loss: " + str(test_acc)
                     self.train.run(feed_dict=feed_dict)
 
 
@@ -130,8 +131,8 @@ class TensorNet():
         except KeyboardInterrupt:
             pass
 
-        self.test_loss = test_loss
-        self.train_loss = batch_loss
+        self.test_loss = test_acc
+        self.train_loss = batch_acc
         #data.plotter.plot_net_state_actions(self)
         #batch = data.next_w_train_batch(batch_size,self,debug = True,resamp = True)
      

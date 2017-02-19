@@ -11,7 +11,7 @@ from numpy.random import rand,randint
 # from keras.utils.np_utils import to_categorical
 
 from deep_lfd.learning_driving.learner import *
-# from deep_lfd.tensor.nets.net_driving import *
+from deep_lfd.tensor.nets.net_driving import *
 # y_binary = to_categorical(y_int)
 
 class DeepLearner(Learner):   
@@ -21,10 +21,14 @@ class DeepLearner(Learner):
 		self.reset()
 
 	def train_learner(self):
-		train_states, train_labels = self.compile_dataset('train', tensor=True)
-		train_labels = to_categorical(train_labels, nb_classes=5)
+		print "SIZE OF TRAIN DATA ",len(self.train_states)
+		print "SIZE OF TEST DATA ", len(self.test_states)
+		data = IMData(self.train_states,self.train_labels,self.test_states,self.test_labels,channels=1)
+		self.net.optimize(10000,data, batch_size=200,save=False)
+		#train_states, train_labels = self.compile_dataset('train', tensor=True)
+		
 		# TODO: Fit model to training set
-		self.net.fit(train_states, train_labels, nb_epoch=5, batch_size=32, verbose=0)
+		#self.net.fit(train_states, train_labels, nb_epoch=5, batch_size=32, verbose=0)
 
 	def eval_policy(self, state):
 		processed_state = self.preprocess_image(state)
@@ -53,18 +57,19 @@ class DeepLearner(Learner):
 
 	def reset(self):
 		#TODO: Compile model
-		super(DeepLearner, self).reset()
-		model = Sequential()
-		model.add(Convolution2D(5, 7, 7, border_mode='same', input_shape=(1, 125, 125)))
-		model.add(Activation("relu"))
-		model.add(Flatten())
-		model.add(Dense(output_dim=60))
-		model.add(Activation("relu"))
-		model.add(Dense(output_dim=5))
-		model.add(Activation("softmax"))
-		model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy'])
-		self.net = model
-		# self.net = Net_Driving(channels=1)
+		self.state_space = []
+		self.labels = []
+
+		self.train_states = []
+		self.train_labels = []
+
+		self.test_states = []
+		self.test_labels = []
+
+		self.test_loss = []
+		self.train_loss = []
+	
+		self.net = Net_Driving(channels=1)
 
 class IMData():
 	
@@ -77,6 +82,38 @@ class IMData():
 		self.tst_l = tst_l
 		self.channels = channels
 
+
+	def im2tensor(self,im,channels=1):
+	    """
+	    convert 3d image (height, width, 3-channel) where values range [0,255]
+	    to appropriate pipeline shape and values of either 0 or 1
+	    cv2 --> tf
+
+	    Prameters
+	    ---------
+	    im : numpy array 
+	        matrix with shape of image
+
+	    channels : int
+	        number of channels into the network (Default 1)
+
+	    Returns
+	    -------
+	    numpy array
+	        image converted to the correct tensor shape
+	    """
+	    shape = np.shape(im)
+	    h, w = shape[0], shape[1]
+	   
+	    zeros = np.zeros((h, w, channels))
+	    for i in range(channels):
+	        zeros[:,:,i] = im[:,:]/255.0
+	    return zeros
+
+	def label_to_binary(self,label):
+		label_ar = np.zeros(5)
+		label_ar[label] = 1.0
+		return label_ar
 
 	def next_train_batch(self,n):
 		"""
@@ -92,12 +129,13 @@ class IMData():
 			traj_len = len(self.trn_s[traj_idx])
 
 			state_idx = randint(traj_len)
-
+			
 			im = self.trn_s[traj_idx][state_idx]
-			im = im2tensor(im,self.channels)
+			im = self.im2tensor(im,self.channels)
 
 			label = self.trn_l[traj_idx][state_idx]
-			batch.append((im, labels))
+			
+			batch.append((im, self.label_to_binary(label)))
 
 		batch = zip(*batch)
 		return list(batch[0]), list(batch[1])
@@ -108,7 +146,7 @@ class IMData():
 		read into memory on request
 		:return: tuple with images in [0], labels in [1]
 		"""
-		num_data = len(self.trn_s)
+		num_data = len(self.tst_s)
 		batch = []
 
 		for i in range(n):
@@ -118,10 +156,10 @@ class IMData():
 			state_idx = randint(traj_len)
 
 			im = self.tst_s[traj_idx][state_idx]
-			im = im2tensor(im,self.channels)
+			im = self.im2tensor(im,self.channels)
 
 			label = self.tst_l[traj_idx][state_idx]
-			batch.append((im, labels))
+			batch.append((im, self.label_to_binary(label)))
 
 		batch = zip(*batch)
 		return list(batch[0]), list(batch[1])
