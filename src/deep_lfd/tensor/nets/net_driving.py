@@ -70,4 +70,6 @@ class Net_Driving(TensorNet):
         self.train_step = tf.train.MomentumOptimizer(.003, .9)
         self.train = self.train_step.minimize(self.loss)
 
+        self.sess = tf.Session()
+        self.sess.run(tf.global_variables_initializer())
 

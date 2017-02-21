@@ -34,7 +34,7 @@ class DeepLearner(Learner):
 		processed_state = self.preprocess_image(state)
 		state_expanded = np.expand_dims(np.expand_dims(processed_state, 0), 1)
 		# TODO: Predict output of net
-		output = self.net.predict_classes(state_expanded, verbose=0)[0]
+		output = self.net.predict(state_expanded, verbose=0)[0]
 		return output
 
 	def get_statistics(self):
