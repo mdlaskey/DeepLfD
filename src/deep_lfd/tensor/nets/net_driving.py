@@ -35,41 +35,38 @@ class Net_Driving(TensorNet):
         self.dir = "./net6/"
         self.name = "grasp_net"
         self.channels = channels
-      
+        self.g = tf.Graph()
+        with self.g.as_default():
+            self.x = tf.placeholder('float', shape=[None,300,300,self.channels])
+            self.y_ = tf.placeholder("float", shape=[None, 5])
 
-        self.x = tf.placeholder('float', shape=[None,128,128,self.channels])
-        self.y_ = tf.placeholder("float", shape=[None, 5])
 
+            self.w_conv1 = self.weight_variable([7, 7, self.channels, 5])
+            self.b_conv1 = self.bias_variable([5])
 
-        self.w_conv1 = self.weight_variable([7, 7, self.channels, 5])
-        self.b_conv1 = self.bias_variable([5])
+            self.h_conv1 = tf.nn.relu(self.conv2d(self.x, self.w_conv1) + self.b_conv1)
 
-        self.h_conv1 = tf.nn.relu(self.conv2d(self.x, self.w_conv1) + self.b_conv1)
+            conv_num_nodes = self.reduce_shape(self.h_conv1.get_shape())
+            fc1_num_nodes = 120
+            
+            self.w_fc1 = self.weight_variable([conv_num_nodes, fc1_num_nodes])
+            # self.w_fc1 = self.weight_variable([1000, fc1_num_nodes])
+            self.b_fc1 = self.bias_variable([fc1_num_nodes])
 
-        conv_num_nodes = self.reduce_shape(self.h_conv1.get_shape())
-        fc1_num_nodes = 60
-        
-        self.w_fc1 = self.weight_variable([conv_num_nodes, fc1_num_nodes])
-        # self.w_fc1 = self.weight_variable([1000, fc1_num_nodes])
-        self.b_fc1 = self.bias_variable([fc1_num_nodes])
+            self.h_conv_flat = tf.reshape(self.h_conv1, [-1, conv_num_nodes])
+            self.h_fc1 = tf.nn.relu(tf.matmul(self.h_conv_flat, self.w_fc1) + self.b_fc1)
 
-        self.h_conv_flat = tf.reshape(self.h_conv1, [-1, conv_num_nodes])
-        self.h_fc1 = tf.nn.relu(tf.matmul(self.h_conv_flat, self.w_fc1) + self.b_fc1)
+            self.w_fc2 = self.weight_variable([fc1_num_nodes, 5])
+            self.b_fc2 = self.bias_variable([5])
 
-        self.w_fc2 = self.weight_variable([fc1_num_nodes, 5])
-        self.b_fc2 = self.bias_variable([5])
+            
+            self.y_out = tf.nn.softmax(tf.matmul(self.h_fc1, self.w_fc2) + self.b_fc2)
+            
+            self.loss = tf.reduce_mean(-tf.reduce_sum(self.y_ * tf.log(self.y_out), reduction_indices=[1]))
+            
 
-        
-        self.y_out = tf.nn.softmax(tf.matmul(self.h_fc1, self.w_fc2) + self.b_fc2)
-        
-        self.loss = tf.reduce_mean(-tf.reduce_sum(self.y_ * tf.log(self.y_out), reduction_indices=[1]))
-        
+            self.acc = self.get_acc(self.y_,self.y_out)
 
-        self.acc = self.get_acc(self.y_,self.y_out)
-
-        self.train_step = tf.train.MomentumOptimizer(.003, .9)
-        self.train = self.train_step.minimize(self.loss)
-
-        self.sess = tf.Session()
-        self.sess.run(tf.global_variables_initializer())
-
+            self.train_step = tf.train.MomentumOptimizer(.003, .9)
+            self.train = self.train_step.minimize(self.loss)
+            self.initializer = tf.initialize_all_variables()

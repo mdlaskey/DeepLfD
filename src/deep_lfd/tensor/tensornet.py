@@ -79,7 +79,7 @@ class TensorNet():
         return sess
 
 
-    def optimize(self, iterations, data, unbiased=False, path=None, batch_size=100, test_print=20, save=True):
+    def optimize(self, iterations, data, unbiased=False, path=None, batch_size=100, test_print=20, save=True,initialize = False):
         """
             optimize net for [iterations]. path is either absolute or 
             relative to current working directory. data is InputData object (see class for details)
@@ -90,7 +90,8 @@ class TensorNet():
         else:
             print "Initializing new variables..."
             # self.sess = tf.Session()
-            self.sess.run(tf.initialize_all_variables())
+            if(initialize):
+                self.sess.run(self.initializer)
             
         
         #logging.basicConfig(filename=log_path, level=logging.DEBUG)
@@ -122,6 +123,9 @@ class TensorNet():
                         #print "TEST: X ERR "+ str(x_loss)+" Y ERR "+str(y_loss)
                         print "[ Iteration " + str(i) + " ] Test loss: " + str(test_acc)
                     self.train.run(feed_dict=feed_dict)
+
+                    if(batch_acc > 0.95 or test_acc > 0.90):
+                        break;
 
 
                     # if( i% 5 == 0):
@@ -161,7 +165,7 @@ class TensorNet():
     def predict(self,state):
         #state = state[0]
         A = self.sess.run(self.y_out, feed_dict={self.x:state}) [0]
-        return np.argmax(A)-1
+        return np.argmax(A)#-1
         
     def dist(self,state):
         return self.sess.run(self.y_out, feed_dict={self.x:state}) [0]

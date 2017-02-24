@@ -7,9 +7,6 @@ from sklearn.cross_validation import train_test_split
 
 class Learner(object):
 
-	def __init__(self):
-		self.reset()
-		
 
 	def compile_dataset(self, dataset='train', tensor=False):
 		"""
@@ -51,6 +48,7 @@ class Learner(object):
 		# 		self.test_labels.append(labels[i])
 
 	def downsample_image(self, state, n_iters=1):
+		
 		for _ in range(n_iters):
 			w, h = state.shape
 			state = cv2.pyrDown(state, dstsize = (w / 2, h / 2))
