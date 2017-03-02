@@ -21,7 +21,7 @@ import robot_logger as audio_logger
 from visualization import Visualizer2D as vis2d
 class  Net_Trainer():
 
-    def __init__(self,com,net_name,c,sub,bincam = None, depthcam = None, use_audio = False):
+    def __init__(self,com,net_name,c,sub,bincam = None, depthcam = None, use_audio = True):
         """
             Init function for Net_Trainer 
 
