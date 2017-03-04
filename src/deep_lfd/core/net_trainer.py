@@ -21,7 +21,7 @@ import robot_logger as audio_logger
 from visualization import Visualizer2D as vis2d
 class  Net_Trainer():
 
-    def __init__(self,com,net_name,c,sub,bincam = None, depthcam = None, use_audio = True):
+    def __init__(self,com,net_name,c,sub,bincam = None, depthcam = None, use_audio_input = True, use_audio_output = True):
         """
             Init function for Net_Trainer 
 
@@ -42,7 +42,8 @@ class  Net_Trainer():
             sub: Yumi Subscriber Class
                 YuMi Subscrber must have start enabled (i.e. sub.start())
 
-            use_audio: Whether to use the Echo as input and speakers for output, or the Xbox controller
+            use_audio_input: Whether to use the Echo as input and speakers for output, or a keyboard button
+            use_audio_output: Whether to use the speakers for output, or the GUI
 
         """
         self.com = com
@@ -52,7 +53,8 @@ class  Net_Trainer():
      
         self.net_name = net_name
 
-        self.use_audio = use_audio
+        self.use_audio_input = use_audio_input
+        self.use_audio_output = use_audio_output
 
         
 
@@ -177,15 +179,12 @@ class  Net_Trainer():
                 If set to true will display a binary mask, while false displays the color image
 
         """
-        if self.use_audio:
-            print "Ready for commands"
-            audio_logger.log("Ready for commands")
+        # Step 1
+        self.publish_output("Please place the object in the workspace.")
 
         while True:
-            if self.use_audio:
-                update = self.detect_echo_record()
-            else:
-                update = self.c.getUpdates()
+            update = get_input()
+
             if(self.com.Options.SENSOR == 'BINCAM'):
                 if(use_binary):
                     state = self.bc.read_binary_frame()
@@ -198,10 +197,8 @@ class  Net_Trainer():
                 color_im,d_img,thumb_img = self.com.get_grasp_state(self.dc)
                 #cv2.imshow('state',thumb_img.data )
                 #vis2d.show()
-           
-            if self.use_audio and update:
-                break
-            elif not self.use_audio and update == None:
+
+            if update:
                 break
 
 
@@ -212,21 +209,13 @@ class  Net_Trainer():
             Function waits until Start is Pressed on the Xbox Controller and records pose
 
         """
+        # Step 2
         terminate = False
-        if self.use_audio:
-            print "Now you can move the arm"
-            audio_logger.log("You may guide my arm now")
+        self.publish_output("You may now guide my arm.")
+        
         while not terminate:
-            has_update = False
-            if self.use_audio:
-                update = self.detect_echo_record()
-                if update:
-                    has_update = True
-            else:
-                update = self.c.getUpdates()
-                if update == None:
-                    has_update = True
-            if has_update:
+            update = self.get_input()
+            if update:
                 #clear buffer 
                 for i in range(5):
                     pose = self.sub.left.get_pose()
@@ -239,22 +228,23 @@ class  Net_Trainer():
                 translation = pose_t[2]
                 if(self.com.check_data(rotation,translation)):
                     terminate = True
-                    audio_logger.log("Success!")
+                    self.publish_output("Success!")
+                    time.sleep(1) # delay to allow Echo to speak, or user to read screen
                 else: 
-                    message = "Invalid label"
-                    if rotation < 0 or rotation > 180:
-                        audio_logger.log(message + "! The gripper needs to be rotated")
+                    message = ""
+                    if rotation < 0:
+                        message += " The gripper needs to be rotated clockwise."
+                    if rotation > 180:
+                        message += " The gripper needs to be rotated counter clockwise."
                     elif translation > 0.22:
-                        audio_logger.log(message + "! The gripper is too high")
+                        message += " The gripper is too high."
                     elif translation < 0.17:
-                        audio_logger.log(message + "! The gripper is too low")
+                        message += " The gripper is too low."
+                    self.publish_output("Failed to re cord!" + message, "Failed to record!" + message)
+                    # For debugging clockwise/ccw. Comment out below!
                     print "INCORRECT LABELS "
                     print "ROTATION ",rotation
                     print "Z AXIS ", translation
-
-                
-
-
 
         self.label = []
 
@@ -266,7 +256,6 @@ class  Net_Trainer():
         if(pixels.x < 0.0 or pixels.y < 0.0):
             print "ROBOT POSE ", pose_t
             raise Exception('DATA NOT VALID')
-
         
         self.save_data(self.net_name)
 
@@ -382,20 +371,51 @@ class  Net_Trainer():
             self.com.save_recording(recording)
 
 
-    def detect_echo_record(self):
-        """
-        Detect whether the Echo was told to record
-        """
-        # self.c.getUpdates() # call the xbox controller for print statements, but don't use it
-        # print "Querying Echo"
-        command = audio_logger.getDataCommand()
-        if command is not None:
-            print "The Echo heard a Record! Wait for the next line..."
-            audio_logger.log("I heard re cord! Please wait.")
-            time.sleep(3)
-            return True
-        # print "Not recording"
-        return False
+
+    def get_input(self):
+        if self.use_audio_input:
+            command = audio_logger.getDataCommand()
+            return (command is not None):
+        else:
+            # Get input from keyboard
+            def getchar():
+                fd = sys.stdin.fileno()
+                old_settings = termios.tcgetattr(fd)
+                print "Press 'r' to record: ",
+                try:
+                    tty.setraw(fd)
+                    ch = sys.stdin.read(1)
+                finally:
+                    termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+                return ch
+            return getchar() == 'r':
+        return
+
+    def publish_output(self, msg1, msg2=None):
+        if self.use_audio_output:
+            # time.sleep(3)
+            audio_logger.log(msg1)
+        else:
+            if msg2 is None:
+                msg2 = msg1
+            # TODO: UI display
+            print msg2
+        return
+
+    # def detect_echo_record(self):
+    #     """
+    #     Detect whether the Echo was told to record
+    #     """
+    #     # self.c.getUpdates() # call the xbox controller for print statements, but don't use it
+    #     # print "Querying Echo"
+    #     command = audio_logger.getDataCommand()
+    #     if command is not None:
+    #         print "The Echo heard a Record! Wait for the next line..."
+    #         audio_logger.log("I heard re cord! Please wait.")
+    #         time.sleep(3)
+    #         return True
+    #     # print "Not recording"
+    #     return False
 
    
 
