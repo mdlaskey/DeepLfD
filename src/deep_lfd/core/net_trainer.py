@@ -232,13 +232,13 @@ class  Net_Trainer():
                     time.sleep(1) # delay to allow Echo to speak, or user to read screen
                 else: 
                     message = ""
-                    if rotation < 0:
+                    if rotation < self.com.Options.ROT_MIN:
                         message += " The gripper needs to be rotated clockwise."
-                    if rotation > 180:
+                    if rotation > self.com.Options.ROT_MAX:
                         message += " The gripper needs to be rotated counter clockwise."
-                    elif translation > 0.22:
+                    elif translation > self.com.Options.Z_MAX:
                         message += " The gripper is too high."
-                    elif translation < 0.17:
+                    elif translation < self.com.Options.Z_MIN:
                         message += " The gripper is too low."
                     self.publish_output("Failed to re cord!" + message, "Failed to record!" + message)
                     # For debugging clockwise/ccw. Comment out below!
