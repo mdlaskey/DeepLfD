@@ -140,8 +140,8 @@ class TensorNet():
         except KeyboardInterrupt:
             pass
 
-        self.test_loss = 0#test_loss
-        self.train_loss = 0#batch_loss
+        self.test_loss = test_loss
+        self.train_loss = batch_loss
         #data.plotter.plot_net_state_actions(self)
         #batch = data.next_w_train_batch(batch_size,self,debug = True,resamp = True)
      
