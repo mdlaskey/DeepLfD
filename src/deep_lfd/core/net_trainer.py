@@ -13,6 +13,7 @@ from deep_lfd.rgbd.bincam_2D import BinaryCamera
 from deep_lfd.debug.ar_overlay import AR_Debug
 import time, datetime, os, random, argparse
 import cv2
+import wx
 import IPython
 import numpy as np
 
@@ -55,6 +56,8 @@ class  Net_Trainer():
 
         self.use_audio_input = use_audio_input
         self.use_audio_output = use_audio_output
+        if not self.use_audio_output:
+            self.dialogue_gui = wx.StaticText(None, wx.ID_ANY, label="Starting demonstration", style=wx.ALIGN_CENTER)
 
         
 
@@ -296,10 +299,6 @@ class  Net_Trainer():
                     print "ROTATION ",rotation
                     print "Z AXIS ", translation
 
-                
-
-
-
         return pose_t,rotation
 
 
@@ -398,8 +397,11 @@ class  Net_Trainer():
         else:
             if msg2 is None:
                 msg2 = msg1
-            # TODO: UI display
-            print msg2
+            # UI display:
+                # http://stackoverflow.com/questions/293344/wxpython-set-value-of-statictext
+                # https://wxpython.org/docs/api/wx.StaticText-class.html
+            self.dialogue_gui.SetLabel(msg2)
+            # print msg2
         return
 
     # def detect_echo_record(self):
@@ -417,11 +419,9 @@ class  Net_Trainer():
     #     # print "Not recording"
     #     return False
 
-   
+
 
 
 
 if __name__ == "__main__":
-   
-
     print "Done."
