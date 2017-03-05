@@ -3,7 +3,8 @@
         Records the image of the current scene and the pose lable. Uses an Xbox Controller
         to signal when to save data. 
 
-        Author: Michael Laskey 
+        Author: Michael Laskey
+        Modified by: Rishi Kapadia
 '''
 
 
@@ -57,8 +58,11 @@ class  Net_Trainer():
         self.use_audio_input = use_audio_input
         self.use_audio_output = use_audio_output
         if not self.use_audio_output:
-            self.dialogue_gui = wx.StaticText(None, wx.ID_ANY, label="Starting demonstration", style=wx.ALIGN_CENTER)
-
+            app = wx.App(False)
+            frame = wx.Frame(None, wx.ID_ANY, "Hello World", size=(300,200))
+            self.dialogue_gui = wx.StaticText(frame, wx.ID_ANY, label="Starting demonstration", style=wx.ALIGN_CENTER)
+            frame.Show(True)
+            app.MainLoop()
         
 
         if(not depthcam == None):
@@ -398,6 +402,7 @@ class  Net_Trainer():
             if msg2 is None:
                 msg2 = msg1
             # UI display:
+                # https://wiki.wxpython.org/Getting%20Started#A_First_Application:_.22Hello.2C_World.22
                 # http://stackoverflow.com/questions/293344/wxpython-set-value-of-statictext
                 # https://wxpython.org/docs/api/wx.StaticText-class.html
             self.dialogue_gui.SetLabel(msg2)
