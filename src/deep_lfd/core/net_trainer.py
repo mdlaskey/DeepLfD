@@ -14,7 +14,7 @@ from deep_lfd.rgbd.bincam_2D import BinaryCamera
 from deep_lfd.debug.ar_overlay import AR_Debug
 import time, datetime, os, random, argparse
 import cv2
-import wx
+# import wx
 import IPython
 import numpy as np
 
@@ -57,12 +57,12 @@ class  Net_Trainer():
 
         self.use_audio_input = use_audio_input
         self.use_audio_output = use_audio_output
-        if not self.use_audio_output:
-            app = wx.App(False)
-            frame = wx.Frame(None, wx.ID_ANY, "Hello World", size=(300,200))
-            self.dialogue_gui = wx.StaticText(frame, wx.ID_ANY, label="Starting demonstration", style=wx.ALIGN_CENTER)
-            frame.Show(True)
-            app.MainLoop()
+        # if not self.use_audio_output:
+        #     app = wx.App(False)
+        #     frame = wx.Frame(None, wx.ID_ANY, "Experiments", size=(300,200))
+        #     self.dialogue_gui = wx.StaticText(frame, wx.ID_ANY, label="Starting demonstration", style=wx.ALIGN_CENTER)
+        #     frame.Show(True)
+        #     app.MainLoop()
         
 
         if(not depthcam == None):
@@ -405,8 +405,8 @@ class  Net_Trainer():
                 # https://wiki.wxpython.org/Getting%20Started#A_First_Application:_.22Hello.2C_World.22
                 # http://stackoverflow.com/questions/293344/wxpython-set-value-of-statictext
                 # https://wxpython.org/docs/api/wx.StaticText-class.html
-            self.dialogue_gui.SetLabel(msg2)
-            # print msg2
+            # self.dialogue_gui.SetLabel(msg2)
+            print msg2
         return
 
     # def detect_echo_record(self):
