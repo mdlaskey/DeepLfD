@@ -264,9 +264,9 @@ class  Net_Trainer():
                     # self.publish_output("Failed to re cord!" + message, "Failed to record!" + message)
                     update = self.do_io("Failed to record!" + message)
                     # For debugging clockwise/ccw. Comment out below!
-                    print "INCORRECT LABELS "
-                    print "ROTATION ",rotation
-                    print "Z AXIS ", translation
+                    # print "INCORRECT LABELS "
+                    # print "ROTATION ",rotation
+                    # print "Z AXIS ", translation
 
         self.label = []
 
@@ -510,7 +510,7 @@ class  Net_Trainer():
                 time.sleep(0.01)
             audio_logger.log("Recording")
         elif not self.use_audio_input and self.use_audio_output:
-            audio_logger.log(msg + " Press 'r' to record.")
+            audio_logger.log(msg)
             self.get_keyboard_input()
             audio_logger.log("Recording")
         elif self.use_audio_input and not self.use_audio_output:
