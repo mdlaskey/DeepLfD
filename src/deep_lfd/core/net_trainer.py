@@ -432,11 +432,11 @@ class  Net_Trainer():
     def get_keyboard_input(self, msg=""):
         pygame.init()
         pygame.font.init()
-        screen = pygame.display.set_mode((1600, 200))
+        screen = pygame.display.set_mode((1700, 200))
         screen.fill((255, 255, 255))
         myfont = pygame.font.SysFont("monospace", 32)
         label = myfont.render(msg, 1, (0,0,0))
-        screen.blit(label, (100, 100))
+        screen.blit(label, (50, 50))
         pygame.display.flip()
         running = True
         while running:
@@ -445,6 +445,17 @@ class  Net_Trainer():
                     running = False
         pygame.quit()
         return True
+
+    def display_to_monitor(self, msg):
+        pygame.init()
+        pygame.font.init()
+        screen = pygame.display.set_mode((1700, 200))
+        screen.fill((255, 255, 255))
+        myfont = pygame.font.SysFont("monospace", 32)
+        label = myfont.render(msg, 1, (0,0,0))
+        screen.blit(label, (50, 50))
+        pygame.display.flip()
+        return
 
     # def publish_output(self, msg1, msg2=None):
     #     if self.use_audio_output:
@@ -497,23 +508,20 @@ class  Net_Trainer():
             audio_logger.log(msg)
             while audio_logger.getDataCommand() is None:
                 time.sleep(0.01)
+            audio_logger.log("Recording")
         elif not self.use_audio_input and self.use_audio_output:
-            audio_logger.log(msg)
+            audio_logger.log(msg + " Press 'r' to record.")
             self.get_keyboard_input()
+            audio_logger.log("Recording")
         elif self.use_audio_input and not self.use_audio_output:
-            pygame.init()
-            pygame.font.init()
-            screen = pygame.display.set_mode((1600, 200))
-            screen.fill((255, 255, 255))
-            myfont = pygame.font.SysFont("monospace", 32)
-            label = myfont.render(msg, 1, (0,0,0))
-            screen.blit(label, (100, 100))
-            pygame.display.flip()
+            self.display_to_monitor(msg)
 
             while audio_logger.getDataCommand() is None:
                 time.sleep(0.01)
+            self.display_to_monitor("Recording...")
         elif not self.use_audio_input and not self.use_audio_output:
             self.get_keyboard_input(msg + " Press 'r' to record.")
+            self.display_to_monitor("Recording...")
         return True
 
 
