@@ -14,7 +14,7 @@ from deep_lfd.rgbd.bincam_2D import BinaryCamera
 from deep_lfd.debug.ar_overlay import AR_Debug
 import time, datetime, os, random, argparse
 import cv2
-# import wx
+import pygame
 import IPython
 import numpy as np
 
@@ -23,7 +23,7 @@ import robot_logger as audio_logger
 from visualization import Visualizer2D as vis2d
 class  Net_Trainer():
 
-    def __init__(self,com,net_name,c,sub,bincam = None, depthcam = None, use_audio_input = True, use_audio_output = True):
+    def __init__(self,com,net_name,c,sub,bincam = None, depthcam = None, use_audio_input = True, use_audio_output = False):
         """
             Init function for Net_Trainer 
 
@@ -57,6 +57,8 @@ class  Net_Trainer():
 
         self.use_audio_input = use_audio_input
         self.use_audio_output = use_audio_output
+        self.success = False
+
         # if not self.use_audio_output:
         #     app = wx.App(False)
         #     frame = wx.Frame(None, wx.ID_ANY, "Experiments", size=(300,200))
@@ -187,10 +189,15 @@ class  Net_Trainer():
 
         """
         # Step 1
-        self.publish_output("Please place the object in the workspace.")
+        # self.publish_output("Please place the object in the workspace.")
 
         while True:
-            update = self.get_input()
+            message = ""
+            if self.success:
+                message = "Success! "
+                self.success = False
+            update = self.do_io(message + "Please place the object in the workspace.")
+            # update = self.get_input()
 
             if(self.com.Options.SENSOR == 'BINCAM'):
                 if(use_binary):
@@ -207,6 +214,7 @@ class  Net_Trainer():
 
             if update:
                 break
+        return
 
 
 
@@ -218,10 +226,14 @@ class  Net_Trainer():
         """
         # Step 2
         terminate = False
-        self.publish_output("You may now guide my arm.")
+        i = 0
+        # self.publish_output("You may now guide my arm.")
         
         while not terminate:
-            update = self.get_input()
+            if i == 0:
+                update = self.do_io("You may now guide my arm.")
+            i += 1
+            # update = self.get_input()
             if update:
                 #clear buffer 
                 for i in range(5):
@@ -235,7 +247,8 @@ class  Net_Trainer():
                 translation = pose_t[2]
                 if(self.com.check_data(rotation,translation)):
                     terminate = True
-                    self.publish_output("Success!")
+                    # self.publish_output("Success!")
+                    self.success = True
                     time.sleep(1) # delay to allow Echo to speak, or user to read screen
                 else: 
                     message = ""
@@ -244,11 +257,12 @@ class  Net_Trainer():
                     elif translation < self.com.Options.Z_MIN:
                         message += " The gripper is too low."
                     elif rotation < self.com.Options.ROT_MIN:
-                        message += " The gripper needs to be rotated clockwise."
+                        message += " The gripper needs to be rotated."
                     elif rotation > self.com.Options.ROT_MAX:
-                        message += " The gripper needs to be rotated counter clockwise."
+                        message += " The gripper needs to be rotated."
                     
-                    self.publish_output("Failed to re cord!" + message, "Failed to record!" + message)
+                    # self.publish_output("Failed to re cord!" + message, "Failed to record!" + message)
+                    update = self.do_io("Failed to record!" + message)
                     # For debugging clockwise/ccw. Comment out below!
                     print "INCORRECT LABELS "
                     print "ROTATION ",rotation
@@ -263,98 +277,97 @@ class  Net_Trainer():
 
         if(pixels.x < 0.0 or pixels.y < 0.0):
             print "ROBOT POSE ", pose_t
-            raise Exception('DATA NOT VALID')
+            # raise Exception('DATA NOT VALID')
         
         self.save_data(self.net_name)
+        return
 
 
-    def get_pose_full(self):
-        """
-            Records the (x,y,theta,z) Pose of the Current YuMi, which is used for learning 
-            Function waits until Start is Pressed on the Xbox Controller and records pose
+    # def get_pose_full(self):
+    #     """
+    #         Records the (x,y,theta,z) Pose of the Current YuMi, which is used for learning 
+    #         Function waits until Start is Pressed on the Xbox Controller and records pose
 
-        """
-        terminate = False
-        while not terminate:
-            has_update = False
-            if self.use_audio:
-                update = self.detect_echo_record()
-                if update:
-                    has_update = True
-            else:
-                update = self.c.getUpdates()
-                if update == None:
-                    has_update = True
-            if has_update:
+    #     """
+    #     terminate = False
+    #     while not terminate:
+    #         has_update = False
+    #         if self.use_audio:
+    #             update = self.detect_echo_record()
+    #             if update:
+    #                 has_update = True
+    #         else:
+    #             update = self.c.getUpdates()
+    #             if update == None:
+    #                 has_update = True
+    #         if has_update:
                 
-                #clear buffer 
-                for i in range(5):
-                    pose = self.sub.left.get_pose()
-                if(pose == None):
-                    raise Exception('YuMi Did Not Return a Pose')
-                pose = pose[1]
-                pose_t = pose.translation
+    #             #clear buffer 
+    #             for i in range(5):
+    #                 pose = self.sub.left.get_pose()
+    #             if(pose == None):
+    #                 raise Exception('YuMi Did Not Return a Pose')
+    #             pose = pose[1]
+    #             pose_t = pose.translation
 
-                rotation = self.extract_angle(pose)
-                translation = pose_t[2]
-                if(self.com.check_data(rotation,translation)):
-                    terminate = True
-                else: 
-                    print "INCORRECT LABELS "
-                    print "ROTATION ",rotation
-                    print "Z AXIS ", translation
+    #             rotation = self.extract_angle(pose)
+    #             translation = pose_t[2]
+    #             if(self.com.check_data(rotation,translation)):
+    #                 terminate = True
+    #             else: 
+    #                 print "INCORRECT LABELS "
+    #                 print "ROTATION ",rotation
+    #                 print "Z AXIS ", translation
 
-        return pose_t,rotation
-
-
+    #     return pose_t,rotation
 
 
-    def record_pose(self,arm = 'LEFT'):
-        """
-            Records the (x,y) Pose of the Current YuMi, which is used for learning 
 
-            Function waits until Start is Pressed on the Xbox Controller and records pose
 
-            Parameters
-            ----------
-            arm: string
-                Specifies which arm to train with (LEFT or RIGHT)
+    # def record_pose(self,arm = 'LEFT'):
+    #     """
+    #         Records the (x,y) Pose of the Current YuMi, which is used for learning 
 
-        """
-        while True:
-            has_update = False
-            if self.use_audio:
-                update = self.detect_echo_record()
-                if update:
-                    has_update = True
-            else:
-                update = self.c.getUpdates()
-                if update == None:
-                    has_update = True
-            if has_update:
+    #         Function waits until Start is Pressed on the Xbox Controller and records pose
 
-                if(arm == 'LEFT'):
-                    pose = self.sub.left.get_pose()
-                elif(arm == 'RIGHT'):
-                    pose = self.sub.right.get_pose()
+    #         Parameters
+    #         ----------
+    #         arm: string
+    #             Specifies which arm to train with (LEFT or RIGHT)
 
-                if(pose == None):
-                    raise Exception('YuMi Did Not Return a Pose')
+    #     """
+    #     while True:
+    #         has_update = False
+    #         if self.use_audio:
+    #             update = self.detect_echo_record()
+    #             if update:
+    #                 has_update = True
+    #         else:
+    #             update = self.c.getUpdates()
+    #             if update == None:
+    #                 has_update = True
+    #         if has_update:
 
-                pose = pose[1]
-                pose_t = pose.translation
-                break
+    #             if(arm == 'LEFT'):
+    #                 pose = self.sub.left.get_pose()
+    #             elif(arm == 'RIGHT'):
+    #                 pose = self.sub.right.get_pose()
+
+    #             if(pose == None):
+    #                 raise Exception('YuMi Did Not Return a Pose')
+
+    #             pose = pose[1]
+    #             pose_t = pose.translation
+    #             break
           
+        # self.label = []
 
+        # pixels = self.com.reg.robot_to_pixel(pose_t[0:2])
+        # #rotation = self.extract_angle(pose)
 
-        self.label = []
+        # self.label = [pixels[0], pixels[1],0.0]
 
-        pixels = self.com.reg.robot_to_pixel(pose_t[0:2])
-        #rotation = self.extract_angle(pose)
-
-        self.label = [pixels[0], pixels[1],0.0]
-
-        self.save_data(self.net_name)
+        # self.save_data(self.net_name)
 
     def save_data(self,net_name):
         """
@@ -373,48 +386,92 @@ class  Net_Trainer():
             self.com.save_recording(recording,self.b)
         elif(self.com.Options.SENSOR == 'PRIMESENSE'): 
             self.com.save_recording(recording)
-
-
-
-    def get_input(self):
-        if self.use_audio_input:
-            command = audio_logger.getDataCommand()
-            return (command is not None)
-        else:
-            # Get input from keyboard
-            def getchar():
-                fd = sys.stdin.fileno()
-                old_settings = termios.tcgetattr(fd)
-                print "Press 'r' to record: ",
-                try:
-                    tty.setraw(fd)
-                    ch = sys.stdin.read(1)
-                # except KeyboardInterrupt:
-                #     raise KeyboardInterrupt
-                #     sys.exit(1)
-                finally:
-                    termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-                return ch
-            if getchar() == 'r':
-                print "r"
-                return True
-            return False
-        return False
-
-    def publish_output(self, msg1, msg2=None):
-        if self.use_audio_output:
-            # time.sleep(3)
-            audio_logger.log(msg1)
-        else:
-            if msg2 is None:
-                msg2 = msg1
-            # UI display:
-                # https://wiki.wxpython.org/Getting%20Started#A_First_Application:_.22Hello.2C_World.22
-                # http://stackoverflow.com/questions/293344/wxpython-set-value-of-statictext
-                # https://wxpython.org/docs/api/wx.StaticText-class.html
-            # self.dialogue_gui.SetLabel(msg2)
-            print msg2
         return
+
+
+
+    # def get_input(self, msg):
+    #     if self.use_audio_input:
+    #         command = audio_logger.getDataCommand()
+    #         return (command is not None)
+    #     else:
+    #         # Get input from keyboard
+    #         # def getchar():
+    #         #     fd = sys.stdin.fileno()
+    #         #     old_settings = termios.tcgetattr(fd)
+    #         #     print "Press 'r' to record: ",
+    #         #     try:
+    #         #         tty.setraw(fd)
+    #         #         ch = sys.stdin.read(1)
+    #         #     # except KeyboardInterrupt:
+    #         #     #     raise KeyboardInterrupt
+    #         #     #     sys.exit(1)
+    #         #     finally:
+    #         #         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    #         #     return ch
+    #         # if getchar() == 'r':
+    #         #     print "r"
+    #         #     return True
+    #         # return False
+    #         pygame.init()
+    #         pygame.font.init()
+    #         screen = pygame.display.set_mode((400, 200))
+    #         screen.fill((255, 255, 255))
+    #         myfont = pygame.font.SysFont("monospace", 15)
+    #         label = myfont.render("Press 'r' to record", 1, (0,0,0))
+    #         screen.blit(label, (100, 100))
+    #         pygame.display.flip()
+    #         running = True
+    #         while running:
+    #             for event in pygame.event.get():
+    #                 if event.type == pygame.KEYDOWN and pygame.key.get_pressed()[pygame.K_r]:
+    #                     running = False
+    #         pygame.quit()
+    #     return False
+
+    def get_keyboard_input(self, msg=""):
+        pygame.init()
+        pygame.font.init()
+        screen = pygame.display.set_mode((1600, 200))
+        screen.fill((255, 255, 255))
+        myfont = pygame.font.SysFont("monospace", 32)
+        label = myfont.render(msg, 1, (0,0,0))
+        screen.blit(label, (100, 100))
+        pygame.display.flip()
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN and pygame.key.get_pressed()[pygame.K_r]:
+                    running = False
+        pygame.quit()
+        return True
+
+    # def publish_output(self, msg1, msg2=None):
+    #     if self.use_audio_output:
+    #         # time.sleep(3)
+    #         audio_logger.log(msg1)
+    #     else:
+    #         if msg2 is None:
+    #             msg2 = msg1
+    #         # UI display:
+    #             # https://wiki.wxpython.org/Getting%20Started#A_First_Application:_.22Hello.2C_World.22
+    #             # http://stackoverflow.com/questions/293344/wxpython-set-value-of-statictext
+    #             # https://wxpython.org/docs/api/wx.StaticText-class.html
+    #         # self.dialogue_gui.SetLabel(msg2)
+    #         screen = pygame.display.set_mode((400, 200))
+    #         screen.fill((255, 255, 255))
+    #         myfont = pygame.font.SysFont("monospace", 15)
+    #         label = myfont.render(msg2, 1, (0,0,0))
+    #         screen.blit(label, (100, 100))
+    #         pygame.display.flip()
+    #         # running = True
+    #         # while running:
+    #         #     for event in pygame.event.get():
+    #         #         if event.type == pygame.KEYDOWN and event.key == 'r':
+    #         #             pygame.quit()
+    #         #             running = False
+    #         print msg2
+    #     return
 
     # def detect_echo_record(self):
     #     """
@@ -430,6 +487,34 @@ class  Net_Trainer():
     #         return True
     #     # print "Not recording"
     #     return False
+
+
+    def do_io(self, msg):
+        if self.use_audio_output:
+            msg = msg.replace("record", "re cord")
+
+        if self.use_audio_input and self.use_audio_output:
+            audio_logger.log(msg)
+            while audio_logger.getDataCommand() is None:
+                time.sleep(0.01)
+        elif not self.use_audio_input and self.use_audio_output:
+            audio_logger.log(msg)
+            self.get_keyboard_input()
+        elif self.use_audio_input and not self.use_audio_output:
+            pygame.init()
+            pygame.font.init()
+            screen = pygame.display.set_mode((1600, 200))
+            screen.fill((255, 255, 255))
+            myfont = pygame.font.SysFont("monospace", 32)
+            label = myfont.render(msg, 1, (0,0,0))
+            screen.blit(label, (100, 100))
+            pygame.display.flip()
+
+            while audio_logger.getDataCommand() is None:
+                time.sleep(0.01)
+        elif not self.use_audio_input and not self.use_audio_output:
+            self.get_keyboard_input(msg + " Press 'r' to record.")
+        return True
 
 
 
