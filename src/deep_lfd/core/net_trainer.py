@@ -23,7 +23,7 @@ import robot_logger as audio_logger
 from visualization import Visualizer2D as vis2d
 class  Net_Trainer():
 
-    def __init__(self,com,net_name,c,sub,bincam = None, depthcam = None, use_audio_input = False, use_audio_output = False):
+    def __init__(self,com,net_name,c,sub,bincam = None, depthcam = None, use_audio_input = True, use_audio_output = True):
         """
             Init function for Net_Trainer 
 
@@ -190,7 +190,7 @@ class  Net_Trainer():
         self.publish_output("Please place the object in the workspace.")
 
         while True:
-            update = get_input()
+            update = self.get_input()
 
             if(self.com.Options.SENSOR == 'BINCAM'):
                 if(use_binary):
@@ -239,14 +239,15 @@ class  Net_Trainer():
                     time.sleep(1) # delay to allow Echo to speak, or user to read screen
                 else: 
                     message = ""
-                    if rotation < self.com.Options.ROT_MIN:
-                        message += " The gripper needs to be rotated clockwise."
-                    if rotation > self.com.Options.ROT_MAX:
-                        message += " The gripper needs to be rotated counter clockwise."
-                    elif translation > self.com.Options.Z_MAX:
+                    if translation > self.com.Options.Z_MAX:
                         message += " The gripper is too high."
                     elif translation < self.com.Options.Z_MIN:
                         message += " The gripper is too low."
+                    elif rotation < self.com.Options.ROT_MIN:
+                        message += " The gripper needs to be rotated clockwise."
+                    elif rotation > self.com.Options.ROT_MAX:
+                        message += " The gripper needs to be rotated counter clockwise."
+                    
                     self.publish_output("Failed to re cord!" + message, "Failed to record!" + message)
                     # For debugging clockwise/ccw. Comment out below!
                     print "INCORRECT LABELS "
@@ -378,7 +379,7 @@ class  Net_Trainer():
     def get_input(self):
         if self.use_audio_input:
             command = audio_logger.getDataCommand()
-            return (command is not None):
+            return (command is not None)
         else:
             # Get input from keyboard
             def getchar():
@@ -388,11 +389,17 @@ class  Net_Trainer():
                 try:
                     tty.setraw(fd)
                     ch = sys.stdin.read(1)
+                # except KeyboardInterrupt:
+                #     raise KeyboardInterrupt
+                #     sys.exit(1)
                 finally:
                     termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
                 return ch
-            return getchar() == 'r':
-        return
+            if getchar() == 'r':
+                print "r"
+                return True
+            return False
+        return False
 
     def publish_output(self, msg1, msg2=None):
         if self.use_audio_output:
