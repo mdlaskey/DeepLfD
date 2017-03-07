@@ -7,6 +7,7 @@ from alan.control.yumi_subscriber import YuMiSubscriber
 import time, os, pygame
 import IPython
 import cv2
+import sys
 from deep_lfd.control.xbox_controller import *
 from deep_lfd.core.net_trainer import Net_Trainer
 from deep_lfd.rgbd.bincam_2D import BinaryCamera 
@@ -36,8 +37,22 @@ class Demonstration:
 
 
 		self.ps = PrimesenseSensor(frame = 'primesense_overhead')
-		self.ps.start()  
-		self.net_train = Net_Trainer(com(),'None',self.c,self.sub,depthcam=self.ps)
+		self.ps.start()
+
+		if len(sys.argv) < 3:
+			print "Not enough arguments for EchoBot experiments!"
+			sys.exit(1)
+		condition = sys.argv[1]
+		if condition not in ["EE", "EK", "KE", "KK"]:
+			print "Invalid condition argument"
+			sys.exit(1)
+		use_audio_input = (condition[0] == "E")
+		use_audio_output = (condition[1] == "E")
+
+		self.net_train = Net_Trainer(com(),self.bc,'None',self.c,self.sub,
+			use_audio_input=use_audio_input, use_audio_output=use_audio_output, experiment_id=sys.argv[2])
+
+		# self.net_train = Net_Trainer(com(),'None',self.c,self.sub,depthcam=self.ps)
 
 
 	def do_net_training(self):

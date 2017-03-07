@@ -540,6 +540,7 @@ class  Net_Trainer():
 
         f = open(file_path, 'a')
         row = [self.experiment_id, self.use_audio_input, self.use_audio_output, self.com.next_rollout(), time.time(), status]
+        row = [str(i) for i in row]
         f.write(",".join(row))
         f.close()
         return
