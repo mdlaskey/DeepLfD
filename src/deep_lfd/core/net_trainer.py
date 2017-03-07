@@ -23,7 +23,7 @@ import robot_logger as audio_logger
 from visualization import Visualizer2D as vis2d
 class  Net_Trainer():
 
-    def __init__(self,com,net_name,c,sub,bincam = None, depthcam = None, use_audio_input = True, use_audio_output = False):
+    def __init__(self,com,net_name,c,sub,bincam = None, depthcam = None, use_audio_input = True, use_audio_output = False, experiment_id=-1):
         """
             Init function for Net_Trainer 
 
@@ -58,6 +58,7 @@ class  Net_Trainer():
         self.use_audio_input = use_audio_input
         self.use_audio_output = use_audio_output
         self.success = False
+        self.experiment_id = experiment_id
 
         # if not self.use_audio_output:
         #     app = wx.App(False)
@@ -196,6 +197,9 @@ class  Net_Trainer():
             if self.success:
                 message = "Success! "
                 self.success = False
+                self.log_to_file("Success")
+            else:
+                self.log_to_file("Init")
             update = self.do_io(message + "Please place the object in the workspace.")
             # update = self.get_input()
 
@@ -251,6 +255,7 @@ class  Net_Trainer():
                     self.success = True
                     time.sleep(1) # delay to allow Echo to speak, or user to read screen
                 else: 
+                    self.log_to_file("Failure")
                     message = ""
                     if translation > self.com.Options.Z_MAX:
                         message += " The gripper is too high."
@@ -523,6 +528,21 @@ class  Net_Trainer():
             self.get_keyboard_input(msg + " Press 'r' to record.")
             self.display_to_monitor("Recording...")
         return True
+
+    
+    def log_to_file(self, status):
+        file_path = "/home/autolab/Workspace/rishi_working/experiment_logs.csv"
+        if not os.path.exists(file_path):
+            f = open(file_path,'w')
+            header = ["experiment_id", "use_audio_input", "use_audio_output", "rollout_number", "timestamp", "status"]
+            f.write(",".join(header))
+            f.close()
+
+        f = open(file_path, 'a')
+        row = [self.experiment_id, self.use_audio_input, self.use_audio_output, self.com.next_rollout(), time.time(), status]
+        f.write(",".join(row))
+        f.close()
+        return
 
 
 
