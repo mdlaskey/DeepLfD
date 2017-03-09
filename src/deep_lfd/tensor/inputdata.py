@@ -5,7 +5,7 @@ Author : Jonathan Lee
 
 '''
 
-import random
+from numpy.random import rand
 import numpy as np
 import numpy.linalg as LA
 import IPython
@@ -87,17 +87,24 @@ def parse(filepath, stop=-1):
 
 class IMData():
     
-    def __init__(self, train_path, test_path,channels=1):
+    def __init__(self, trajectories,channels=1):
+        '''
+        lists of trajectories each with images and labels 
+        '''
+        self.train_trajs = []
+        self.test_trajs = []
+        num_t = len(trajectories)
 
+        for i in range(num_t):
+            flip = rand()
+            if(flip > 0.2):
+                self.train_trajs.append(trajectories[i])
+            else:
+                self.test_trajs.append(trajectories[i])
 
-        self.train_tups = parse(train_path)
-        self.test_tups = parse(test_path)
 
         self.i = 0
         self.channels = channels
-
-        random.shuffle(self.train_tups)
-        random.shuffle(self.test_tups)
 
     def next_train_batch(self, n):
         """
@@ -105,22 +112,19 @@ class IMData():
         :param n: number of examples to return in batch
         :return: tuple with images in [0] and labels in [1]
         """
-        if self.i + n > len(self.train_tups):
+        if self.i + n > len(self.train_trajs):
             self.i = 0
-            random.shuffle(self.train_tups)
-        batch_tups = self.train_tups[self.i:n+self.i]
+            random.shuffle(self.train_trajs)
+
+        batch_tups = self.train_trajs[self.i:n+self.i]
         batch = []
-        for path, labels in batch_tups:
-            im = DepthImage.open(path)
-           
-            
-            if(im == None):
-                raise Exception('Image ' + path +' Not Found')
-            im = im2tensor(im,self.channels)
+        for state, labels in batch_tups:    
+
+            im = im2tensor(state,self.channels)
            
             
             batch.append((im, labels))  
-                #print path            
+            #print path            
 
             
         batch = zip(*batch)
@@ -133,16 +137,12 @@ class IMData():
         read into memory on request
         :return: tuple with images in [0], labels in [1]
         """
-        batch = []
-        for path, labels in self.test_tups[:200]:
-            im = DepthImage.open(path)
-            
-            if(im == None):
-                raise Exception('Image ' + path +' Not Found')
-            im = im2tensor(im,self.channels)
+
+        for state, labels in self.test_trajs:
+      
+            im = im2tensor(state,self.channels)
            
-            if(labels[0] > -0.99):
-                batch.append((im, labels))  
+            batch.append((im, labels))  
                 #print path          
 
   
