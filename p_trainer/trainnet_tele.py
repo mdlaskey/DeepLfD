@@ -42,10 +42,11 @@ def get_trajectory(num,records):
     print 'left poses shape', right_poses.shape
 
     # kinect frames
-    kinect = load_images(trial_path, 'primesense_depth')
+    kinect = load_images(trial_path, 'webcam')
     print 'kinect shape', kinect.shape    
 
     T = left_poses.shape[0]
+    print "TRAJ ",num
     traj = []
     for i in range(T):
         cv2.imshow('vid',kinect[i,:,:,:])
@@ -81,12 +82,12 @@ if __name__ == '__main__':
         print "please enter a last value with -l (not inclusive)"
         sys.exit()
 
-    get_trajectory(3,records)
+    #get_trajectory(3,records)
 
-    # trajectories = []
-    # for i in range(first,last):
-    #     traj = get_trajectory(i,records)
-    #     trajectories.append(traj)
+    trajectories = []
+    for i in range(first,last):
+        traj = get_trajectory(i,records)
+        trajectories.append(traj)
 
 
     #TRAJECTORIES: A LIST OF Rollouts with each rollout [[state,label],...,[state,label]]
