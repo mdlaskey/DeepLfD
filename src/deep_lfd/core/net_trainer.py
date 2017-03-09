@@ -513,20 +513,22 @@ class  Net_Trainer():
             audio_logger.log(msg)
             while audio_logger.getDataCommand() is None:
                 time.sleep(0.01)
-            audio_logger.log("Recording")
+            audio_logger.log("Recording, please wait")
+            time.sleep(1)
         elif not self.use_audio_input and self.use_audio_output:
             audio_logger.log(msg)
             self.get_keyboard_input()
-            audio_logger.log("Recording")
+            audio_logger.log("Recording, please wait")
+            time.sleep(1)
         elif self.use_audio_input and not self.use_audio_output:
             self.display_to_monitor(msg)
 
             while audio_logger.getDataCommand() is None:
                 time.sleep(0.01)
-            self.display_to_monitor("Recording...")
+            self.display_to_monitor("Recording, please wait...")
         elif not self.use_audio_input and not self.use_audio_output:
             self.get_keyboard_input(msg + " Press 'r' to record.")
-            self.display_to_monitor("Recording...")
+            self.display_to_monitor("Recording, please wait...")
         return True
 
     
@@ -536,12 +538,14 @@ class  Net_Trainer():
             f = open(file_path,'w')
             header = ["experiment_id", "use_audio_input", "use_audio_output", "rollout_number", "timestamp", "status"]
             f.write(",".join(header))
+            f.write("\n")
             f.close()
 
         f = open(file_path, 'a')
         row = [self.experiment_id, self.use_audio_input, self.use_audio_output, self.com.next_rollout(), time.time(), status]
         row = [str(i) for i in row]
         f.write(",".join(row))
+        f.write("\n")
         f.close()
         return
 

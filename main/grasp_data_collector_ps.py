@@ -49,7 +49,7 @@ class Demonstration:
 		use_audio_input = (condition[0] == "E")
 		use_audio_output = (condition[1] == "E")
 
-		self.net_train = Net_Trainer(com(),self.bc,'None',self.c,self.sub,
+		self.net_train = Net_Trainer(com(),'None',self.c,self.sub,depthcam=self.ps,
 			use_audio_input=use_audio_input, use_audio_output=use_audio_output, experiment_id=sys.argv[2])
 
 		# self.net_train = Net_Trainer(com(),'None',self.c,self.sub,depthcam=self.ps)
