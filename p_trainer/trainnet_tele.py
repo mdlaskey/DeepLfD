@@ -46,13 +46,15 @@ def get_trajectory(num,records):
     print 'kinect shape', kinect.shape    
 
     T = left_poses.shape[0]
+    
     traj = []
     for i in range(T):
         cv2.imshow('vid',kinect[i,:,:,:])
         cv2.waitKey(300)
-        # label = [left_poses[i,:],right_poses[i,:]]
-        # state = get_state(kinect[i,:])
-        #traj.append([state,label])
+        label = [get_label(left_poses[i,:]),get_label(right_poses[i,:])]
+
+        state = get_state(kinect[i,:])
+        traj.append([state,label])
 
     return traj
 
