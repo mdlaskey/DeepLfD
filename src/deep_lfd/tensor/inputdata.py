@@ -6,6 +6,7 @@ Author : Jonathan Lee
 '''
 
 from numpy.random import rand
+import random
 import numpy as np
 import numpy.linalg as LA
 import IPython
@@ -97,7 +98,7 @@ class IMData():
 
         for i in range(num_t):
             flip = rand()
-            if(flip > 0.2):
+            if(flip > 0.1):
                 self.train_trajs.append(trajectories[i])
             else:
                 self.test_trajs.append(trajectories[i])
@@ -116,19 +117,22 @@ class IMData():
             self.i = 0
             random.shuffle(self.train_trajs)
 
-        batch_tups = self.train_trajs[self.i:n+self.i]
+        batch_traj = self.train_trajs[self.i:n+self.i]
+        
         batch = []
-        for state, labels in batch_tups:    
+        for traj in batch_traj:
+            for state, labels in traj:    
 
-            im = im2tensor(state,self.channels)
+                im = im2tensor(state,self.channels)
            
             
-            batch.append((im, labels))  
+                batch.append((im, labels))  
             #print path            
 
-            
+        #IPython.embed()
         batch = zip(*batch)
         self.i = self.i + n
+       
         return list(batch[0]), list(batch[1])
 
 
@@ -137,15 +141,16 @@ class IMData():
         read into memory on request
         :return: tuple with images in [0], labels in [1]
         """
-
-        for state, labels in self.test_trajs:
+        batch = []
+        for traj in self.test_trajs:
+            for state,label in traj:
       
-            im = im2tensor(state,self.channels)
+                im = im2tensor(state,self.channels)
            
-            batch.append((im, labels))  
+                batch.append((im, label))  
                 #print path          
 
   
-        random.shuffle(self.test_tups)
+        random.shuffle(self.test_trajs)
         batch = zip(*batch)
         return list(batch[0]), list(batch[1])
