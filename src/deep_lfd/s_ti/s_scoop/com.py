@@ -30,6 +30,21 @@ def get_label(pos,prev_pos):
 
     return label
 
+def rescale(outval):
+
+    S_D = len(outval)
+    s_outval = outval
+
+    for i in range(S_D):
+        s_outval = (outval[i]+1.0)*((u_b[i] - l_b[i])/2.0)+l_b[i]
+ 
+    pos_l = s_outval[0:4]
+    pos_r = s_outval[4:S_D] 
+
+    return pos_r,pos_l
+
+
+
 def get_state(image):
     #CROP VALUES 
     org = [60,200]
