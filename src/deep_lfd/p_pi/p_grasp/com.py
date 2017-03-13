@@ -51,7 +51,7 @@ class Grasp_COM(Common):
         outval = netn.output(sess, state,channels=1)
         sess.close()
         netn.clean_up()
-
+        
         pos = self.rescale(outval)
         print "PREDICTED CORRECTION ", pos
 

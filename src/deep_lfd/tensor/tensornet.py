@@ -72,7 +72,12 @@ class TensorNet():
         if not var_path:
             raise Exception("No path to model variables specified")
         print "Restoring existing net from " + var_path + "..."
-        sess = tf.Session()
+        tf_config = tf.ConfigProto(
+            inter_op_parallelism_threads=1,
+            intra_op_parallelism_threads=1
+            )
+        tf_config.gpu_options.allow_growth = True
+        sess = tf.Session(config=tf_config)
         with sess.as_default():
             sess.run(tf.initialize_all_variables())
             saver = tf.train.Saver()
@@ -109,24 +114,28 @@ class TensorNet():
 
                     if i % 10 == 0:
                         
-                        batch_loss = self.loss.eval(feed_dict=feed_dict)
+                        batch_loss = self.error.eval(feed_dict=feed_dict)
                         
                     
                         #print "TRAIN: X ERR "+ str(x_loss)+" Y ERR "+str(y_loss)
-                        print "[ Iteration " + str(i) + " ] Training loss: " + str(batch_loss)
-                        if(math.isnan(batch_loss)):
-                            raise Exception('Loss Exploded')
+                        print "[ Iteration " + str(i) + " ] Training loss: "
+                        print batch_loss
+
+                        # if(math.isnan(batch_loss)):
+                        #     print feed_dict
+                        #     raise Exception('Loss Exploded')
                     if i % test_print == 0:
                         test_batch = data.next_test_batch()
                         test_ims, test_labels = test_batch
                         test_dict = { self.x: test_ims, self.y_: test_labels }
                         
-                        test_loss = self.loss.eval(feed_dict=test_dict)
+                        test_loss = self.error.eval(feed_dict=test_dict)
                         
                         
                         
                         #print "TEST: X ERR "+ str(x_loss)+" Y ERR "+str(y_loss)
-                        print "[ Iteration " + str(i) + " ] Test loss: " + str(test_loss)
+                        print "[ Iteration " + str(i) + " ] Test loss: "
+                        print test_loss
                     try: 
                         self.train.run(feed_dict=feed_dict)
                     except:

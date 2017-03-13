@@ -96,13 +96,16 @@ class IMData():
         self.test_trajs = []
         num_t = len(trajectories)
 
-        for i in range(num_t):
-            flip = rand()
-            if(flip > 0.1):
+        num_test_trajs = max(int(0.1 * num_t), 1)
+        is_train_inds = [True] * num_t
+        is_train_inds[:num_test_trajs] = [False] * num_test_trajs
+        random.shuffle(is_train_inds)
+
+        for i, is_train in enumerate(is_train_inds):
+            if is_train:
                 self.train_trajs.append(trajectories[i])
             else:
                 self.test_trajs.append(trajectories[i])
-
 
         self.i = 0
         self.channels = channels
@@ -112,7 +115,7 @@ class IMData():
         Read into memory on request
         :param n: number of examples to return in batch
         :return: tuple with images in [0] and labels in [1]
-        """
+        """ 
         if self.i + n > len(self.train_trajs):
             self.i = 0
             random.shuffle(self.train_trajs)
