@@ -5,12 +5,12 @@ record: True
 v: 1500
 z: fine
 
-supervisor: Jacky2
-fps: 20
-save_every: 50
+supervisor: Jeff_3_13
+fps: 10
+save_every: 100
 cache_path: /mnt/hdd/data/.cache
 demo_path: /mnt/hdd/data/experiment_demos/
-output_path: /mnt/hdd/data/yumi_flexpendant/ # /mnt/hdd/data/yumi_kinesthetics/
+output_path: /mnt/hdd/data/yumi_kinesthetics/ #/mnt/hdd/data/yumi_teleop/, /mnt/hdd/data/yumi_kinesthetics
 data_srcs:
   webcam:
     T_path: '/home/autolab/Public/alan/calib/webcam_overhead/webcam_overhead_to_world.tf'

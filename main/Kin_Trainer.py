@@ -19,7 +19,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     opt = Options()
-    controller = XboxController()
+    # controller = XboxController()
+    controller = None
 
     KT = Kinesthetic_Trainer(opt, controller, args)
     KT.start_motion(True)
