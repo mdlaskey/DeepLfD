@@ -60,6 +60,35 @@ class Grasp_Options(Options):
         self.setup(self.root_dir, self.setup_dir)
 
 
+    def set_filter_paths(self):
+
+        self.gray_mask_dir = self.setup_dir + "gray_mask/"
+        if not os.path.exists(self.gray_mask_dir):
+            os.makedirs(self.gray_mask_dir)
+
+        self.gray_mask_binned_dir = self.setup_dir + "gray_mask_binned/"
+        if not os.path.exists(self.gray_mask_binned_dir):
+            os.makedirs(self.gray_mask_binned_dir)
+
+        self.gray_dir = self.setup_dir + "gray/"
+        if not os.path.exists(self.gray_dir):
+            os.makedirs(self.gray_dir)
+
+        self.rgb_mask_dir = self.setup_dir + "rgb_mask/"
+        if not os.path.exists(self.rgb_mask_dir):
+            os.makedirs(self.rgb_mask_dir)
+
+        self.rgb_mask_binned_dir = self.setup_dir + "rgb_mask_binned/"
+        if not os.path.exists(self.rgb_mask_binned_dir):
+            os.makedirs(self.rgb_mask_binned_dir)
+
+        self.rgb_gray_dir = self.setup_dir + "rgb_gray_dir/"
+        if not os.path.exists(self.rgb_gray_dir):
+            os.makedirs(self.rgb_gray_dir)
+
+
+
+
 if __name__ == '__main__':
     options = Grasp_Options()
     b = BinaryCamera(options)
