@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 
-from alan.rgbd.bgSegmentation import bgBoundsByMode, segmentBG
-from alan.rgbd.basic_imaging import formatRGB, contourise, bins, deNoise, add_dim
+from deep_lfd.rgbd.bgSegmentation import bgBoundsByMode, segmentBG
+from deep_lfd.rgbd.basic_imaging import formatRGB, contourise, bins, deNoise, add_dim
 
 def get_mask(img):
     lb, ub = bgBoundsByMode(img, 30)
