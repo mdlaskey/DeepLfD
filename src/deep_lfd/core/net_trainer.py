@@ -1,7 +1,7 @@
 '''
         A class used to train a neural network to predict (x,y,z,theta) pose
-        Records the image of the current scene and the pose lable. Uses an Xbox Controller
-        to signal when to save data. 
+        Records the image of the current scene and the pose lable. Uses an Amazon Echo
+        to signal when to save data.
 
         Author: Michael Laskey
         Modified by: Rishi Kapadia
@@ -20,10 +20,12 @@ import numpy as np
 
 import robot_logger as audio_logger
 
+ITERATION_NUMBER = 0
+
 from visualization import Visualizer2D as vis2d
 class  Net_Trainer():
 
-    def __init__(self,com,net_name,c,sub,bincam = None, depthcam = None, use_audio_input = True, use_audio_output = False, experiment_id=-1):
+    def __init__(self,com,net_name,c,sub,bincam = None, depthcam = None, use_audio_input = True, use_audio_output = False, experiment_id=-1, echobot_demo=False):
         """
             Init function for Net_Trainer 
 
@@ -59,14 +61,7 @@ class  Net_Trainer():
         self.use_audio_output = use_audio_output
         self.success = False
         self.experiment_id = experiment_id
-
-        # if not self.use_audio_output:
-        #     app = wx.App(False)
-        #     frame = wx.Frame(None, wx.ID_ANY, "Experiments", size=(300,200))
-        #     self.dialogue_gui = wx.StaticText(frame, wx.ID_ANY, label="Starting demonstration", style=wx.ALIGN_CENTER)
-        #     frame.Show(True)
-        #     app.MainLoop()
-        
+        self.echobot_demo = echobot_demo
 
         if(not depthcam == None):
             self.dc = depthcam
@@ -191,6 +186,8 @@ class  Net_Trainer():
         """
         # Step 1
         # self.publish_output("Please place the object in the workspace.")
+        global ITERATION_NUMBER
+        ITERATION_NUMBER += 1
 
         while True:
             message = ""
@@ -200,7 +197,19 @@ class  Net_Trainer():
                 self.log_to_file("Success")
             else:
                 self.log_to_file("Init")
-            update = self.do_io(message + "Please place the object in the workspace.")
+            if self.echobot_demo:
+                if ITERATION_NUMBER < 3:
+                    audio_logger.log("effect_step_1")
+                    time.sleep(0.05)
+                    update = self.do_io("Step 1: Please place the object in the workspace and capture an image.")
+                elif ITERATION_NUMBER < 5:
+                    audio_logger.log("effect_step_1")
+                    time.sleep(0.05)
+                    update = self.do_io("Step 2 is through, now run step 1.")
+                else:
+                    update = self.do_io("effect_step_1")
+            else:
+                update = self.do_io(message + "Please place the object in the workspace.")
             # update = self.get_input()
 
             if(self.com.Options.SENSOR == 'BINCAM'):
@@ -229,13 +238,26 @@ class  Net_Trainer():
 
         """
         # Step 2
+        global ITERATION_NUMBER
         terminate = False
         i = 0
         # self.publish_output("You may now guide my arm.")
         
         while not terminate:
             if i == 0:
-                update = self.do_io("You may now guide my arm.")
+                if self.echobot_demo:
+                    if ITERATION_NUMBER < 3:
+                        audio_logger.log("effect_step_2")
+                        time.sleep(0.05)
+                        update = self.do_io("Step 2: Please guide my arm to the object and record my arm’s pose.")
+                    elif ITERATION_NUMBER < 5:
+                        audio_logger.log("effect_step_2")
+                        time.sleep(0.05)
+                        update = self.do_io("Step 1 is done, now do step 2.")
+                    else:
+                        update = self.do_io("effect_step_2")
+                else:
+                    update = self.do_io("You may now guide my arm.")
             i += 1
             # update = self.get_input()
             if update:
@@ -253,21 +275,42 @@ class  Net_Trainer():
                     terminate = True
                     # self.publish_output("Success!")
                     self.success = True
-                    time.sleep(1) # delay to allow Echo to speak, or user to read screen
+                    # time.sleep(1) # delay to allow Echo to speak, or user to read screen
                 else: 
                     self.log_to_file("Failure")
+                    if self.echobot_demo:
+                        audio_logger.log("effect_error")
+                        time.sleep(0.05)
                     message = ""
                     if translation > self.com.Options.Z_MAX:
-                        message += " The gripper is too high."
+                        if self.echobot_demo:
+                            message += "Oh no! The gripper is too high. Let's try that again."
+                        else:
+                            message += "Failed to record! The gripper is too high."
                     elif translation < self.com.Options.Z_MIN:
-                        message += " The gripper is too low."
+                        if self.echobot_demo:
+                            message += "Oh no! The gripper is too low. Let's try that again."
+                        else:
+                            message += "Failed to record! The gripper is too low."
                     elif rotation < self.com.Options.ROT_MIN:
-                        message += " The gripper needs to be rotated."
+                        if self.echobot_demo:
+                            message += random.choice([
+                                "Looks like the gripper needs to be rotated 180 degrees.",
+                                "I think the gripper needs to be rotated 180 degrees."
+                            ])
+                        else:
+                            message += "Failed to record! The gripper needs to be rotated."
                     elif rotation > self.com.Options.ROT_MAX:
-                        message += " The gripper needs to be rotated."
+                        if self.echobot_demo:
+                            message += random.choice([
+                                "Looks like the gripper needs to be rotated 180 degrees.",
+                                "I think the gripper needs to be rotated 180 degrees."
+                            ])
+                        else:
+                            message += "Failed to record! The gripper needs to be rotated."
                     
                     # self.publish_output("Failed to re cord!" + message, "Failed to record!" + message)
-                    update = self.do_io("Failed to record!" + message)
+                    update = self.do_io(message)
                     # For debugging clockwise/ccw. Comment out below!
                     # print "INCORRECT LABELS "
                     # print "ROTATION ",rotation
@@ -282,7 +325,10 @@ class  Net_Trainer():
 
         if(pixels.x < 0.0 or pixels.y < 0.0):
             print "ROBOT POSE ", pose_t
+            audio_logger.log("That's odd, I can't see the object anymore. Did you move it outside of the workspace? Let's try another sample.")
             # raise Exception('DATA NOT VALID')
+            time.sleep(1)
+            return
         
         self.save_data(self.net_name)
         return
@@ -513,7 +559,15 @@ class  Net_Trainer():
             audio_logger.log(msg)
             while audio_logger.getDataCommand() is None:
                 time.sleep(0.01)
-            audio_logger.log("Recording, please wait")
+            if self.echobot_demo:
+                message = random.choice([
+                    "Recording, please wait",
+                    "Got it, give me a second",
+                    "Alright, sit tight for a moment"
+                ])
+            else:
+                message = "Recording, please wait"
+            audio_logger.log(message)
             time.sleep(1)
         elif not self.use_audio_input and self.use_audio_output:
             audio_logger.log(msg)
