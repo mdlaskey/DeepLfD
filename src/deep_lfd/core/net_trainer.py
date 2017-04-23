@@ -249,7 +249,7 @@ class  Net_Trainer():
                     if ITERATION_NUMBER < 3:
                         audio_logger.log("effect_step_2")
                         time.sleep(0.05)
-                        update = self.do_io("Step 2: Please guide my arm to the object and record my arm’s pose.")
+                        update = self.do_io("Step 2: Please guide my arm to the object and record my arm's pose.")
                     elif ITERATION_NUMBER < 5:
                         audio_logger.log("effect_step_2")
                         time.sleep(0.05)
